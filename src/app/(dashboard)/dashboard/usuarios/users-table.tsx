@@ -6,6 +6,14 @@ import { toggleUserActive } from "@/services/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,11 +32,12 @@ import { EditRoleDialog, EditProfileDialog } from "./user-dialogs";
 import type { UserWithProfile } from "@/types";
 import type { Role } from "@/generated/prisma/client";
 
-const roleBadgeVariant: Record<Role, "destructive" | "default" | "secondary"> = {
-  Admin: "destructive",
-  Profesional: "default",
-  Recepcion: "secondary",
-};
+const roleBadgeVariant: Record<Role, "destructive" | "default" | "secondary"> =
+  {
+    Admin: "destructive",
+    Profesional: "default",
+    Recepcion: "secondary",
+  };
 
 const roleLabel: Record<Role, string> = {
   Admin: "Admin",
@@ -37,17 +46,26 @@ const roleLabel: Record<Role, string> = {
 };
 
 export function UsersTable({ users }: { users: UserWithProfile[] }) {
-  const [selectedUser, setSelectedUser] = useState<UserWithProfile | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserWithProfile | null>(
+    null
+  );
   const [editRoleOpen, setEditRoleOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmUser, setConfirmUser] = useState<UserWithProfile | null>(null);
+  const [toggling, setToggling] = useState(false);
 
-  async function handleToggleActive(user: UserWithProfile) {
-    const action = user.isActive ? "desactivar" : "activar";
-    if (!confirm(`¿Estás seguro de ${action} a ${user.profile?.firstName} ${user.profile?.lastName}?`)) {
-      return;
-    }
+  function openConfirm(user: UserWithProfile) {
+    setConfirmUser(user);
+    setConfirmOpen(true);
+  }
 
-    const result = await toggleUserActive(user.id);
+  async function handleConfirmToggle() {
+    if (!confirmUser) return;
+    setToggling(true);
+    const result = await toggleUserActive(confirmUser.id);
+    setToggling(false);
+    setConfirmOpen(false);
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -105,7 +123,8 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onSelect={() => {
+                      closeOnClick
+                      onClick={() => {
                         setSelectedUser(user);
                         setEditProfileOpen(true);
                       }}
@@ -114,7 +133,8 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
                       Editar Perfil
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => {
+                      closeOnClick
+                      onClick={() => {
                         setSelectedUser(user);
                         setEditRoleOpen(true);
                       }}
@@ -123,7 +143,8 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
                       Editar Rol
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => handleToggleActive(user)}
+                      closeOnClick
+                      onClick={() => openConfirm(user)}
                     >
                       <Power className="size-4 mr-2" />
                       {user.isActive ? "Desactivar" : "Activar"}
@@ -136,12 +157,56 @@ export function UsersTable({ users }: { users: UserWithProfile[] }) {
         </TableBody>
       </Table>
 
+      {/* Confirm toggle dialog */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {confirmUser?.isActive ? "Desactivar usuario" : "Activar usuario"}
+            </DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de{" "}
+              {confirmUser?.isActive ? "desactivar" : "activar"} a{" "}
+              <span className="font-medium text-foreground">
+                {confirmUser?.profile?.firstName} {confirmUser?.profile?.lastName}
+              </span>
+              ?{" "}
+              {confirmUser?.isActive
+                ? "El usuario no podrá iniciar sesión."
+                : "El usuario podrá volver a iniciar sesión."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+              disabled={toggling}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant={confirmUser?.isActive ? "destructive" : "default"}
+              onClick={handleConfirmToggle}
+              disabled={toggling}
+            >
+              {toggling
+                ? "Procesando..."
+                : confirmUser?.isActive
+                ? "Desactivar"
+                : "Activar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <EditRoleDialog
+        key={`role-${selectedUser?.id}`}
         user={selectedUser}
         open={editRoleOpen}
         onOpenChange={setEditRoleOpen}
       />
       <EditProfileDialog
+        key={`profile-${selectedUser?.id}`}
         user={selectedUser}
         open={editProfileOpen}
         onOpenChange={setEditProfileOpen}

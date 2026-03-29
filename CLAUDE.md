@@ -56,3 +56,18 @@ Role filtering happens entirely in the frontend sidebar (`src/components/shared/
 ### Route Groups
 - `(auth)` — unauthenticated pages, centered card layout
 - `(dashboard)` — protected pages, full sidebar+navbar shell, fetches `getCurrentUser()` in layout
+
+### Supabase Admin Client
+`src/lib/supabase/admin.ts` exports `getSupabaseAdmin()` — a lazy singleton using the `SUPABASE_SERVICE_ROLE_KEY` env var. Used server-side only for admin operations (`auth.admin.createUser`, `auth.admin.updateUserById`). Always call the function, never instantiate at module level (avoids build-time errors when the env var is absent).
+
+### @base-ui/react API Notes
+- **DropdownMenuItem**: use `onClick` (not `onSelect` — that prop doesn't exist). Add `closeOnClick` to close the menu on click.
+- **Select**: accepts `name` prop and renders a hidden input for form submission. Use `defaultValue` for uncontrolled or `value`+`onValueChange` for controlled.
+- **Dialog/Trigger with render prop**: `<DialogTrigger render={<Button />}>children</DialogTrigger>` — children are forwarded into the rendered element.
+
+### Confirmations — Never use `window.confirm()`
+Always use a custom `Dialog`-based confirmation. Pattern used in `src/app/(dashboard)/dashboard/usuarios/users-table.tsx`:
+- Separate `confirmOpen` + `confirmUser` state
+- `Dialog` with `DialogHeader`, `DialogDescription` describing the action and its consequences
+- Two buttons: `variant="outline"` to cancel, `variant="destructive"` (or `"default"`) to confirm
+- Loading state (`disabled` + label change) while the async action runs
