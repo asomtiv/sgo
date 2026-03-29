@@ -4,6 +4,7 @@ export type UserWithProfile = {
   id: string;
   email: string;
   role: Role;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   profile: {

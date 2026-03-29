@@ -113,42 +113,37 @@ export function AppSidebar({ user }: { user: UserWithProfile }) {
       <Separator className="bg-sidebar-border" />
 
       {/* User section */}
-      <div className="p-3">
-        <div
-          className={cn(
-            "flex items-center gap-3",
-            collapsed && "justify-center"
-          )}
-        >
-          <div className="flex size-8 shrink-0 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
-            {initials}
-          </div>
-          {!collapsed && (
+      <div className={cn("p-3 flex items-center gap-3", collapsed && "justify-center")}>
+        {!collapsed && (
+          <>
+            <div className="flex size-8 shrink-0 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+              {initials}
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{displayName}</p>
               <p className="text-xs text-sidebar-foreground/60 truncate">
                 {user.role}
               </p>
             </div>
-          )}
-          <form action={logout}>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  />
-                }
-              >
-                <LogOut className="size-4" />
-              </TooltipTrigger>
-              <TooltipContent side="right">Cerrar sesión</TooltipContent>
-            </Tooltip>
-          </form>
-        </div>
+          </>
+        )}
+        <form action={logout}>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                />
+              }
+            >
+              <LogOut className="size-4" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Cerrar sesión</TooltipContent>
+          </Tooltip>
+        </form>
       </div>
     </aside>
   );

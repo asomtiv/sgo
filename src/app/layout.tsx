@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default function RootLayout({
           <TooltipProvider>
             {children}
           </TooltipProvider>
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
     </html>
