@@ -13,6 +13,10 @@ export default async function UsuariosPage() {
 
   const users = await getAllUsers();
 
+  const admins = users.filter((u) => u.role === "Admin");
+  const profesionales = users.filter((u) => u.role === "Profesional");
+  const recepcion = users.filter((u) => u.role === "Recepcion");
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -34,7 +38,11 @@ export default async function UsuariosPage() {
           </p>
         </div>
       ) : (
-        <UsersTable users={users} />
+        <div className="space-y-8">
+          <UsersTable title="Administradores" users={admins} />
+          <UsersTable title="Profesionales" users={profesionales} />
+          <UsersTable title="Recepción" users={recepcion} />
+        </div>
       )}
     </div>
   );

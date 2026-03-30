@@ -59,14 +59,37 @@ export function AppSidebar({ user }: { user: UserWithProfile }) {
       <Separator className="bg-sidebar-border" />
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-2 py-3">
-        {filteredItems.map((item) => {
+      <nav className="flex-1 px-2 py-3">
+        {filteredItems.map((item, index) => {
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
               : pathname.startsWith(item.href);
 
-          const linkContent = (
+          const isDashboard = item.href === "/dashboard";
+          const prevItem = filteredItems[index - 1];
+          const showSeparator = prevItem?.href === "/dashboard";
+
+          const linkEl = collapsed ? (
+            <Tooltip key={item.href}>
+              <TooltipTrigger
+                render={
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors justify-center",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-primary"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  />
+                }
+              >
+                <item.icon className="size-5 shrink-0" />
+              </TooltipTrigger>
+              <TooltipContent side="right">{item.title}</TooltipContent>
+            </Tooltip>
+          ) : (
             <Link
               key={item.href}
               href={item.href}
@@ -83,30 +106,14 @@ export function AppSidebar({ user }: { user: UserWithProfile }) {
             </Link>
           );
 
-          if (collapsed) {
-            return (
-              <Tooltip key={item.href}>
-                <TooltipTrigger
-                  render={
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors justify-center",
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-primary"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      )}
-                    />
-                  }
-                >
-                  <item.icon className="size-5 shrink-0" />
-                </TooltipTrigger>
-                <TooltipContent side="right">{item.title}</TooltipContent>
-              </Tooltip>
-            );
-          }
-
-          return linkContent;
+          return (
+            <div key={item.href}>
+              {showSeparator && (
+                <Separator className="bg-sidebar-border my-2" />
+              )}
+              {linkEl}
+            </div>
+          );
         })}
       </nav>
 

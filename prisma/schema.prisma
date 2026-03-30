@@ -14,13 +14,14 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  email     String   @unique
-  role      Role     @default(Recepcion)
-  isActive  Boolean  @default(true) @map("is_active")
-  profile   Profile?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String        @id @default(uuid()) @db.Uuid
+  email        String        @unique
+  role         Role          @default(Recepcion)
+  isActive     Boolean       @default(true) @map("is_active")
+  profile      Profile?
+  professional Professional?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -36,4 +37,61 @@ model Profile {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("profiles")
+}
+
+model Speciality {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String         @unique
+  professionals Professional[]
+
+  @@map("specialities")
+}
+
+model Professional {
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @unique @map("user_id") @db.Uuid
+  licenseNumber String     @unique @map("license_number")
+  specialityId  String     @map("speciality_id") @db.Uuid
+  isActive      Boolean    @default(true) @map("is_active")
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  speciality    Speciality @relation(fields: [specialityId], references: [id])
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@map("professionals")
+}
+
+model Provincia {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique
+  patients Patient[]
+
+  @@map("provincias")
+}
+
+model ObraSocial {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique
+  patients Patient[]
+
+  @@map("obras_sociales")
+}
+
+model Patient {
+  id            String      @id @default(uuid()) @db.Uuid
+  dni           String      @unique
+  firstName     String      @map("first_name")
+  lastName      String      @map("last_name")
+  email         String?
+  phone         String?
+  birthDate     DateTime?   @map("birth_date")
+  address       String?
+  provinciaId   String?     @map("provincia_id") @db.Uuid
+  provincia     Provincia?  @relation(fields: [provinciaId], references: [id])
+  obraSocialId  String?     @map("obra_social_id") @db.Uuid
+  obraSocial    ObraSocial? @relation(fields: [obraSocialId], references: [id])
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@map("patients")
 }

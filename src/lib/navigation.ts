@@ -24,6 +24,12 @@ export const navItems: NavItem[] = [
     roles: ["Admin", "Profesional", "Recepcion"],
   },
   {
+    title: "Agenda",
+    href: "/dashboard/agenda",
+    icon: CalendarDays,
+    roles: ["Admin", "Profesional", "Recepcion"],
+  },
+  {
     title: "Pacientes",
     href: "/dashboard/pacientes",
     icon: Users,
@@ -34,12 +40,6 @@ export const navItems: NavItem[] = [
     href: "/dashboard/profesionales",
     icon: Stethoscope,
     roles: ["Admin", "Recepcion"],
-  },
-  {
-    title: "Agenda",
-    href: "/dashboard/agenda",
-    icon: CalendarDays,
-    roles: ["Admin", "Profesional", "Recepcion"],
   },
   {
     title: "Insumos",

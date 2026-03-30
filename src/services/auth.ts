@@ -2,7 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { loginSchema, registerSchema } from "@/types/schemas";
+import {
+  loginSchema,
+  registerSchema,
+  forgotPasswordSchema,
+  updatePasswordSchema,
+} from "@/types/schemas";
 import { prisma } from "@/lib/prisma";
 
 export async function login(_prevState: unknown, formData: FormData) {
@@ -78,3 +83,49 @@ export async function logout() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+export async function forgotPassword(_prevState: unknown, formData: FormData) {
+  const supabase = await createClient();
+
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
+  });
+
+  if (!parsed.success) {
+    return { error: "Email inválido" };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/update-password`,
+  });
+
+  // Always return success to not reveal if the email exists
+  return { success: true };
+}
+
+export async function updatePassword(_prevState: unknown, formData: FormData) {
+  const supabase = await createClient();
+
+  const parsed = updatePasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos";
+    return { error: firstError };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+

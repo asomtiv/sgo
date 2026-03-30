@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SGO - Sistema de Gestión Odontológica",
+  title: "SGO | Gestión Odontológica",
   description: "Sistema de gestión para clínicas odontológicas",
 };
 

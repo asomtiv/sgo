@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
-import Link from "next/link";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { login } from "@/services/auth";
+import { toast } from "sonner";
+import { updatePassword } from "@/services/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,13 +12,22 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-export function LoginForm() {
-  const [state, formAction, pending] = useActionState(login, null);
+export function UpdatePasswordForm() {
+  const router = useRouter();
+  const [state, formAction, pending] = useActionState(updatePassword, null);
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success("Contraseña actualizada exitosamente");
+      setTimeout(() => router.push("/login"), 1500);
+    } else if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state, router]);
 
   return (
     <Card>
@@ -25,10 +35,8 @@ export function LoginForm() {
         <div className="flex justify-center mb-2">
           <Image src="/icon.svg" alt="SGO" width={64} height={64} priority />
         </div>
-        <CardTitle className="text-2xl font-bold">SGO</CardTitle>
-        <CardDescription>
-          Sistema de Gestión Odontológica
-        </CardDescription>
+        <CardTitle className="text-2xl font-bold">Nueva Contraseña</CardTitle>
+        <CardDescription>Ingresá tu nueva contraseña.</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
@@ -38,17 +46,7 @@ export function LoginForm() {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="tu@email.com"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">Nueva contraseña</Label>
             <Input
               id="password"
               name="password"
@@ -58,27 +56,22 @@ export function LoginForm() {
               minLength={6}
             />
           </div>
-          <div className="text-right">
-            <Link
-              href="/forgot-password"
-              className="text-sm text-primary hover:underline"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••"
+              required
+              minLength={6}
+            />
           </div>
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Ingresando..." : "Ingresar"}
+            {pending ? "Actualizando..." : "Actualizar contraseña"}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="justify-center">
-        <p className="text-sm text-muted-foreground">
-          ¿No tienes cuenta?{" "}
-          <Link href="/register" className="text-primary hover:underline font-medium">
-            Registrarse
-          </Link>
-        </p>
-      </CardFooter>
     </Card>
   );
 }

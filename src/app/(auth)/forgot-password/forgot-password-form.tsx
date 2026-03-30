@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { register } from "@/services/auth";
+import { forgotPassword } from "@/services/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +16,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function RegisterForm() {
-  const [state, formAction, pending] = useActionState(register, null);
+export function ForgotPasswordForm() {
+  const [state, formAction, pending] = useActionState(forgotPassword, null);
 
   return (
     <Card>
@@ -25,9 +25,12 @@ export function RegisterForm() {
         <div className="flex justify-center mb-2">
           <Image src="/icon.svg" alt="SGO" width={64} height={64} priority />
         </div>
-        <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Recuperar Contraseña
+        </CardTitle>
         <CardDescription>
-          Regístrate en SGO
+          Ingresá tu email y te enviaremos un enlace para restablecer tu
+          contraseña.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -37,26 +40,12 @@ export function RegisterForm() {
               {state.error}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Nombre</Label>
-              <Input
-                id="firstName"
-                name="firstName"
-                placeholder="Juan"
-                required
-              />
+          {state?.success && (
+            <div className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-sm p-3 border border-green-200 dark:border-green-800">
+              Si el email existe en el sistema, recibirás un enlace de
+              recuperación. Revisá tu bandeja de entrada.
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Apellido</Label>
-              <Input
-                id="lastName"
-                name="lastName"
-                placeholder="Pérez"
-                required
-              />
-            </div>
-          </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -67,27 +56,18 @@ export function RegisterForm() {
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••"
-              required
-              minLength={6}
-            />
-          </div>
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Registrando..." : "Registrarse"}
+            {pending ? "Enviando..." : "Enviar enlace de recuperación"}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-primary hover:underline font-medium">
-            Ingresar
+          <Link
+            href="/login"
+            className="text-primary hover:underline font-medium"
+          >
+            Volver a iniciar sesión
           </Link>
         </p>
       </CardFooter>
