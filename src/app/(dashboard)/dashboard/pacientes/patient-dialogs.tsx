@@ -28,13 +28,23 @@ import type { PatientWithProvincia } from "@/types";
 
 type Provincia = { id: string; name: string };
 type ObraSocial = { id: string; name: string };
+type Nacionalidad = { id: string; name: string };
 
-function provinciaName(provincias: Provincia[], value: unknown) {
-  return provincias.find((p) => p.id === value)?.name ?? "Seleccionar...";
+const ESTADO_CIVIL_OPTIONS = [
+  { value: "Soltero", label: "Soltero/a" },
+  { value: "Casado", label: "Casado/a" },
+  { value: "Viudo", label: "Viudo/a" },
+  { value: "Divorciado", label: "Divorciado/a" },
+  { value: "Convivencia", label: "Convivencia" },
+  { value: "SeparadoLegalmente", label: "Separado/a Legalmente" },
+] as const;
+
+function findName<T extends { id: string; name: string }>(list: T[], value: unknown) {
+  return list.find((i) => i.id === value)?.name ?? "Seleccionar...";
 }
 
-function obraSocialName(obrasSociales: ObraSocial[], value: unknown) {
-  return obrasSociales.find((o) => o.id === value)?.name ?? "Seleccionar...";
+function findEstadoCivil(value: unknown) {
+  return ESTADO_CIVIL_OPTIONS.find((o) => o.value === value)?.label ?? "Seleccionar...";
 }
 
 // --- Create Patient Dialog ---
@@ -42,9 +52,11 @@ function obraSocialName(obrasSociales: ObraSocial[], value: unknown) {
 export function CreatePatientDialog({
   provincias,
   obrasSociales,
+  nacionalidades,
 }: {
   provincias: Provincia[];
   obrasSociales: ObraSocial[];
+  nacionalidades: Nacionalidad[];
 }) {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(createPatient, null);
@@ -64,7 +76,7 @@ export function CreatePatientDialog({
         <Plus data-icon="inline-start" />
         Crear Paciente
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Crear Paciente</DialogTitle>
           <DialogDescription>
@@ -86,32 +98,17 @@ export function CreatePatientDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="create-p-firstName">Nombre</Label>
-              <Input
-                id="create-p-firstName"
-                name="firstName"
-                placeholder="Juan"
-                required
-              />
+              <Input id="create-p-firstName" name="firstName" placeholder="Juan" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="create-p-lastName">Apellido</Label>
-              <Input
-                id="create-p-lastName"
-                name="lastName"
-                placeholder="Pérez"
-                required
-              />
+              <Input id="create-p-lastName" name="lastName" placeholder="Pérez" required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="create-p-email">Email</Label>
-              <Input
-                id="create-p-email"
-                name="email"
-                type="email"
-                placeholder="paciente@email.com"
-              />
+              <Input id="create-p-email" name="email" type="email" placeholder="paciente@email.com" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="create-p-phone">Teléfono</Label>
@@ -121,25 +118,51 @@ export function CreatePatientDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="create-p-birthDate">Fecha de Nacimiento</Label>
-              <Input
-                id="create-p-birthDate"
-                name="birthDate"
-                type="date"
-              />
+              <Input id="create-p-birthDate" name="birthDate" type="date" />
+            </div>
+            <div className="space-y-2">
+              <Label>Estado Civil</Label>
+              <Select name="estadoCivil">
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar...">
+                    {(value: unknown) => findEstadoCivil(value)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADO_CIVIL_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nacionalidad</Label>
+              <Select name="nacionalidadId">
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar...">
+                    {(value: unknown) => findName(nacionalidades, value)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {nacionalidades.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Provincia</Label>
               <Select name="provinciaId">
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Seleccionar...">
-                    {(value: unknown) => provinciaName(provincias, value)}
+                    {(value: unknown) => findName(provincias, value)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {provincias.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -148,25 +171,19 @@ export function CreatePatientDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="create-p-address">Dirección</Label>
-              <Input
-                id="create-p-address"
-                name="address"
-                placeholder="Av. Ejemplo 123"
-              />
+              <Input id="create-p-address" name="address" placeholder="Av. Ejemplo 123" />
             </div>
             <div className="space-y-2">
               <Label>Obra Social</Label>
               <Select name="obraSocialId">
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Seleccionar...">
-                    {(value: unknown) => obraSocialName(obrasSociales, value)}
+                    {(value: unknown) => findName(obrasSociales, value)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {obrasSociales.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.name}
-                    </SelectItem>
+                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -189,12 +206,14 @@ export function EditPatientDialog({
   patient,
   provincias,
   obrasSociales,
+  nacionalidades,
   open,
   onOpenChange,
 }: {
   patient: PatientWithProvincia | null;
   provincias: Provincia[];
   obrasSociales: ObraSocial[];
+  nacionalidades: Nacionalidad[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -217,7 +236,7 @@ export function EditPatientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Editar Paciente</DialogTitle>
           <DialogDescription>
@@ -229,79 +248,75 @@ export function EditPatientDialog({
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-dni">DNI</Label>
-              <Input
-                id="edit-dni"
-                name="dni"
-                defaultValue={patient.dni}
-                required
-                pattern="\d{7,8}"
-                title="7 u 8 dígitos"
-              />
+              <Input id="edit-dni" name="dni" defaultValue={patient.dni} required pattern="\d{7,8}" title="7 u 8 dígitos" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-p-firstName">Nombre</Label>
-              <Input
-                id="edit-p-firstName"
-                name="firstName"
-                defaultValue={patient.firstName}
-                required
-              />
+              <Input id="edit-p-firstName" name="firstName" defaultValue={patient.firstName} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-p-lastName">Apellido</Label>
-              <Input
-                id="edit-p-lastName"
-                name="lastName"
-                defaultValue={patient.lastName}
-                required
-              />
+              <Input id="edit-p-lastName" name="lastName" defaultValue={patient.lastName} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-p-email">Email</Label>
-              <Input
-                id="edit-p-email"
-                name="email"
-                type="email"
-                defaultValue={patient.email ?? ""}
-              />
+              <Input id="edit-p-email" name="email" type="email" defaultValue={patient.email ?? ""} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-p-phone">Teléfono</Label>
-              <PhoneInput
-                id="edit-p-phone"
-                name="phone"
-                defaultValue={patient.phone ?? ""}
-              />
+              <PhoneInput id="edit-p-phone" name="phone" defaultValue={patient.phone ?? ""} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-p-birthDate">Fecha de Nacimiento</Label>
-              <Input
-                id="edit-p-birthDate"
-                name="birthDate"
-                type="date"
-                defaultValue={birthDateStr}
-              />
+              <Input id="edit-p-birthDate" name="birthDate" type="date" defaultValue={birthDateStr} />
+            </div>
+            <div className="space-y-2">
+              <Label>Estado Civil</Label>
+              <Select name="estadoCivil" defaultValue={patient.estadoCivil ?? undefined}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar...">
+                    {(value: unknown) => findEstadoCivil(value)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADO_CIVIL_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nacionalidad</Label>
+              <Select name="nacionalidadId" defaultValue={patient.nacionalidadId ?? undefined}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar...">
+                    {(value: unknown) => findName(nacionalidades, value)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {nacionalidades.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Provincia</Label>
-              <Select
-                name="provinciaId"
-                defaultValue={patient.provinciaId ?? undefined}
-              >
+              <Select name="provinciaId" defaultValue={patient.provinciaId ?? undefined}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Seleccionar...">
-                    {(value: unknown) => provinciaName(provincias, value)}
+                    {(value: unknown) => findName(provincias, value)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {provincias.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -310,28 +325,19 @@ export function EditPatientDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-p-address">Dirección</Label>
-              <Input
-                id="edit-p-address"
-                name="address"
-                defaultValue={patient.address ?? ""}
-              />
+              <Input id="edit-p-address" name="address" defaultValue={patient.address ?? ""} />
             </div>
             <div className="space-y-2">
               <Label>Obra Social</Label>
-              <Select
-                name="obraSocialId"
-                defaultValue={patient.obraSocialId ?? undefined}
-              >
+              <Select name="obraSocialId" defaultValue={patient.obraSocialId ?? undefined}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Seleccionar...">
-                    {(value: unknown) => obraSocialName(obrasSociales, value)}
+                    {(value: unknown) => findName(obrasSociales, value)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {obrasSociales.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.name}
-                    </SelectItem>
+                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pencil, Mail, Hash, Phone } from "lucide-react";
+import { Pencil, Mail, Hash, Phone, Calendar } from "lucide-react";
 import { EditProfessionalDialog } from "./professional-dialogs";
+import { AvailabilitySheet } from "./availability-sheet";
+import { formatDisplayName } from "@/lib/format";
 import type { ProfessionalWithDetails } from "@/types";
 
 type Speciality = { id: string; name: string };
@@ -40,15 +42,16 @@ export function ProfessionalsGrid({
   const [selectedProfessional, setSelectedProfessional] =
     useState<ProfessionalWithDetails | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [availabilityProfessional, setAvailabilityProfessional] =
+    useState<ProfessionalWithDetails | null>(null);
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const colorMap = buildColorMap(specialities);
 
   return (
     <>
       <div className="grid grid-cols-5 gap-4">
         {professionals.map((prof) => {
-          const name = prof.user.profile
-            ? `${prof.user.profile.firstName} ${prof.user.profile.lastName}`
-            : prof.user.email;
+          const name = formatDisplayName(prof.user.profile, prof.user.email, prof.user.role);
           const initials = prof.user.profile
             ? `${prof.user.profile.firstName[0]}${prof.user.profile.lastName[0]}`
             : prof.user.email[0].toUpperCase();
@@ -71,16 +74,30 @@ export function ProfessionalsGrid({
                     Inactivo
                   </span>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => {
-                    setSelectedProfessional(prof);
-                    setEditOpen(true);
-                  }}
-                >
-                  <Pencil className="size-4" />
-                </Button>
+                <div className="flex gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => {
+                      setAvailabilityProfessional(prof);
+                      setAvailabilityOpen(true);
+                    }}
+                    title="Disponibilidad"
+                  >
+                    <Calendar className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => {
+                      setSelectedProfessional(prof);
+                      setEditOpen(true);
+                    }}
+                    title="Editar"
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* Avatar + identidad */}
@@ -124,6 +141,13 @@ export function ProfessionalsGrid({
         specialities={specialities}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+
+      <AvailabilitySheet
+        key={`avail-${availabilityProfessional?.id}`}
+        professional={availabilityProfessional}
+        open={availabilityOpen}
+        onOpenChange={setAvailabilityOpen}
       />
     </>
   );

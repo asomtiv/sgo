@@ -19,3 +19,9 @@ export async function getAllObrasSociales() {
     orderBy: { name: "asc" },
   });
 }
+
+export async function getAllNacionalidades() {
+  return prisma.nacionalidad.findMany({
+    orderBy: { name: "asc" },
+  });
+}

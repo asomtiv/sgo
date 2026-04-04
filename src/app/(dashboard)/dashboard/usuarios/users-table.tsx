@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, UserPen, ShieldCheck, Power, Trash2, KeyRound } from "lucide-react";
 import { EditRoleDialog, EditProfileDialog, ResetPasswordDialog } from "./user-dialogs";
+import { formatDisplayName } from "@/lib/format";
 import type { UserWithProfile } from "@/types";
 import type { Role } from "@/generated/prisma/client";
 
@@ -143,9 +144,7 @@ export function UsersTable({
                 {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
-                      {user.profile
-                        ? `${user.profile.firstName} ${user.profile.lastName}`
-                        : "Sin perfil"}
+                      {formatDisplayName(user.profile, "Sin perfil", user.role)}
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell className="text-muted-foreground">
@@ -241,8 +240,7 @@ export function UsersTable({
                     ¿Estás seguro de{" "}
                     {confirmUser?.isActive ? "desactivar" : "activar"} a{" "}
                     <span className="font-medium text-foreground">
-                      {confirmUser?.profile?.firstName}{" "}
-                      {confirmUser?.profile?.lastName}
+                      {confirmUser ? formatDisplayName(confirmUser.profile, confirmUser.email, confirmUser.role) : ""}
                     </span>
                     ?{" "}
                     {confirmUser?.isActive
@@ -281,8 +279,7 @@ export function UsersTable({
                   <DialogDescription>
                     ¿Estás seguro de eliminar a{" "}
                     <span className="font-medium text-foreground">
-                      {deleteUser_?.profile?.firstName}{" "}
-                      {deleteUser_?.profile?.lastName ?? deleteUser_?.email}
+                      {deleteUser_ ? formatDisplayName(deleteUser_.profile, deleteUser_.email, deleteUser_.role) : ""}
                     </span>
                     ? Esta acción es permanente y no se puede deshacer.
                   </DialogDescription>

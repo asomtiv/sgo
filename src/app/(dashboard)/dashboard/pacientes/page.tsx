@@ -1,5 +1,5 @@
 import { getAllPatients } from "@/services/patient";
-import { getAllProvincias, getAllObrasSociales } from "@/services/data";
+import { getAllProvincias, getAllObrasSociales, getAllNacionalidades } from "@/services/data";
 import { CreatePatientDialog } from "./patient-dialogs";
 import { PatientsTable } from "./patients-table";
 import { Users } from "lucide-react";
@@ -10,10 +10,11 @@ export default async function PacientesPage({
   searchParams: Promise<{ search?: string }>;
 }) {
   const { search } = await searchParams;
-  const [patients, provincias, obrasSociales] = await Promise.all([
+  const [patients, provincias, obrasSociales, nacionalidades] = await Promise.all([
     getAllPatients(search),
     getAllProvincias(),
     getAllObrasSociales(),
+    getAllNacionalidades(),
   ]);
 
   return (
@@ -25,7 +26,7 @@ export default async function PacientesPage({
             Gestión de pacientes de la clínica
           </p>
         </div>
-        <CreatePatientDialog provincias={provincias} obrasSociales={obrasSociales} />
+        <CreatePatientDialog provincias={provincias} obrasSociales={obrasSociales} nacionalidades={nacionalidades} />
       </div>
 
       {patients.length === 0 && !search ? (
@@ -37,7 +38,7 @@ export default async function PacientesPage({
           </p>
         </div>
       ) : (
-        <PatientsTable patients={patients} provincias={provincias} obrasSociales={obrasSociales} />
+        <PatientsTable patients={patients} provincias={provincias} obrasSociales={obrasSociales} nacionalidades={nacionalidades} />
       )}
     </div>
   );

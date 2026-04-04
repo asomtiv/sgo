@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { formatDisplayName } from "@/lib/format";
 import type { UserWithProfile, ProfessionalWithDetails } from "@/types";
 
 type Speciality = { id: string; name: string };
@@ -37,7 +38,7 @@ function specialityName(specialities: Speciality[], value: unknown) {
 function userName(availableUsers: UserWithProfile[], value: unknown) {
   const u = availableUsers.find((u) => u.id === value);
   if (!u) return "Seleccionar usuario...";
-  return u.profile ? `${u.profile.firstName} ${u.profile.lastName}` : u.email;
+  return formatDisplayName(u.profile, u.email, u.role);
 }
 
 // --- Create Professional Dialog ---
@@ -98,9 +99,7 @@ export function CreateProfessionalDialog({
                 <SelectContent>
                   {availableUsers.map((u) => (
                     <SelectItem key={u.id} value={u.id}>
-                      {u.profile
-                        ? `${u.profile.firstName} ${u.profile.lastName}`
-                        : u.email}
+                      {formatDisplayName(u.profile, u.email, u.role)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -180,8 +179,7 @@ export function EditProfessionalDialog({
           <DialogTitle>Editar Profesional</DialogTitle>
           <DialogDescription>
             Modificar datos de{" "}
-            {professional.user.profile?.firstName}{" "}
-            {professional.user.profile?.lastName}
+            {formatDisplayName(professional.user.profile, professional.user.email, professional.user.role)}
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} className="space-y-4">

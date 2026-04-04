@@ -13,6 +13,31 @@ enum Role {
   Recepcion
 }
 
+enum TipoAusencia {
+  Vacaciones
+  Enfermedad
+  Personal
+  Congreso
+  Otro
+}
+
+enum EstadoTurno {
+  Pendiente
+  Confirmado
+  Cancelado
+  Completado
+  Ausente
+}
+
+enum EstadoCivil {
+  Soltero
+  Casado
+  Viudo
+  Divorciado
+  Convivencia
+  SeparadoLegalmente
+}
+
 model User {
   id           String        @id @default(uuid()) @db.Uuid
   email        String        @unique
@@ -48,17 +73,49 @@ model Speciality {
 }
 
 model Professional {
-  id            String     @id @default(uuid()) @db.Uuid
-  userId        String     @unique @map("user_id") @db.Uuid
-  licenseNumber String     @unique @map("license_number")
-  specialityId  String     @map("speciality_id") @db.Uuid
-  isActive      Boolean    @default(true) @map("is_active")
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  speciality    Speciality @relation(fields: [specialityId], references: [id])
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @unique @map("user_id") @db.Uuid
+  licenseNumber  String         @unique @map("license_number")
+  specialityId   String         @map("speciality_id") @db.Uuid
+  slotDuration   Int            @default(30) @map("slot_duration")
+  isActive       Boolean        @default(true) @map("is_active")
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  speciality     Speciality     @relation(fields: [specialityId], references: [id])
+  availabilities Availability[]
+  leaves         Leave[]
+  appointments   Appointment[]
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   @@map("professionals")
+}
+
+model Availability {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @map("professional_id") @db.Uuid
+  dayOfWeek      Int          @map("day_of_week")
+  startTime      String       @map("start_time")
+  endTime        String       @map("end_time")
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@unique([professionalId, dayOfWeek, startTime])
+  @@map("availabilities")
+}
+
+model Leave {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @map("professional_id") @db.Uuid
+  startDate      DateTime     @map("start_date")
+  endDate        DateTime     @map("end_date")
+  type           TipoAusencia
+  description    String?
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("leaves")
 }
 
 model Provincia {
@@ -77,6 +134,14 @@ model ObraSocial {
   @@map("obras_sociales")
 }
 
+model Nacionalidad {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique
+  patients Patient[]
+
+  @@map("nacionalidades")
+}
+
 model Patient {
   id            String      @id @default(uuid()) @db.Uuid
   dni           String      @unique
@@ -86,12 +151,33 @@ model Patient {
   phone         String?
   birthDate     DateTime?   @map("birth_date")
   address       String?
-  provinciaId   String?     @map("provincia_id") @db.Uuid
-  provincia     Provincia?  @relation(fields: [provinciaId], references: [id])
-  obraSocialId  String?     @map("obra_social_id") @db.Uuid
-  obraSocial    ObraSocial? @relation(fields: [obraSocialId], references: [id])
+  provinciaId      String?        @map("provincia_id") @db.Uuid
+  provincia        Provincia?     @relation(fields: [provinciaId], references: [id])
+  obraSocialId     String?        @map("obra_social_id") @db.Uuid
+  obraSocial       ObraSocial?    @relation(fields: [obraSocialId], references: [id])
+  nacionalidadId   String?        @map("nacionalidad_id") @db.Uuid
+  nacionalidad     Nacionalidad?  @relation(fields: [nacionalidadId], references: [id])
+  estadoCivil      EstadoCivil?   @map("estado_civil")
+  appointments     Appointment[]
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
   @@map("patients")
+}
+
+model Appointment {
+  id                 String       @id @default(uuid()) @db.Uuid
+  patientId          String       @map("patient_id") @db.Uuid
+  professionalId     String       @map("professional_id") @db.Uuid
+  startDateTime      DateTime     @map("start_date_time")
+  endDateTime        DateTime     @map("end_date_time")
+  status             EstadoTurno  @default(Pendiente)
+  notes              String?
+  cancellationReason String?      @map("cancellation_reason")
+  patient            Patient      @relation(fields: [patientId], references: [id])
+  professional       Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  @@map("appointments")
 }

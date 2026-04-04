@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { logout } from "@/services/auth";
+import { formatDisplayName } from "@/lib/format";
 import type { UserWithProfile } from "@/types";
 
 export function AppSidebar({ user }: { user: UserWithProfile }) {
@@ -24,9 +25,7 @@ export function AppSidebar({ user }: { user: UserWithProfile }) {
     item.roles.includes(user.role)
   );
 
-  const displayName = user.profile
-    ? `${user.profile.firstName} ${user.profile.lastName}`
-    : user.email;
+  const displayName = formatDisplayName(user.profile, user.email, user.role);
 
   const initials = user.profile
     ? `${user.profile.firstName[0]}${user.profile.lastName[0]}`

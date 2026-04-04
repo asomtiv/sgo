@@ -34,15 +34,35 @@ import type { PatientWithProvincia } from "@/types";
 
 type Provincia = { id: string; name: string };
 type ObraSocial = { id: string; name: string };
+type Nacionalidad = { id: string; name: string };
+
+const ESTADO_CIVIL_LABELS: Record<string, string> = {
+  Soltero: "Soltero/a",
+  Casado: "Casado/a",
+  Viudo: "Viudo/a",
+  Divorciado: "Divorciado/a",
+  Convivencia: "Convivencia",
+  SeparadoLegalmente: "Separado/a Leg.",
+};
+
+function calcularEdad(birthDate: Date): number {
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+  return age;
+}
 
 export function PatientsTable({
   patients,
   provincias,
   obrasSociales,
+  nacionalidades,
 }: {
   patients: PatientWithProvincia[];
   provincias: Provincia[];
   obrasSociales: ObraSocial[];
+  nacionalidades: Nacionalidad[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -99,33 +119,37 @@ export function PatientsTable({
 
       <Table className="table-fixed">
         <colgroup>
-          <col className="w-[8%]" />
-          <col className="w-[14%]" />
-          <col className="w-[14%]" />
+          <col className="w-[7%]" />
+          <col className="w-[10%]" />
+          <col className="w-[10%]" />
+          <col className="w-[5%]" />
+          <col className="w-[9%]" />
+          <col className="w-[10%]" />
+          <col className="w-[10%]" />
           <col className="w-[10%]" />
           <col className="w-[10%]" />
           <col className="w-[12%]" />
-          <col className="w-[14%]" />
-          <col className="w-[12%]" />
-          <col className="w-[6%]" />
+          <col className="w-[5%]" />
         </colgroup>
         <TableHeader>
           <TableRow>
             <TableHead>DNI</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Apellido</TableHead>
+            <TableHead>Edad</TableHead>
             <TableHead>Teléfono</TableHead>
-            <TableHead>F. Nacimiento</TableHead>
-            <TableHead>Dirección</TableHead>
+            <TableHead>Estado Civil</TableHead>
+            <TableHead>Nacionalidad</TableHead>
             <TableHead>Provincia</TableHead>
             <TableHead>Obra Social</TableHead>
+            <TableHead>Dirección</TableHead>
             <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {patients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                 No se encontraron pacientes.
               </TableCell>
             </TableRow>
@@ -135,15 +159,17 @@ export function PatientsTable({
                 <TableCell>{patient.dni}</TableCell>
                 <TableCell className="font-medium">{patient.firstName}</TableCell>
                 <TableCell className="font-medium">{patient.lastName}</TableCell>
-                <TableCell>{patient.phone ?? "—"}</TableCell>
                 <TableCell>
-                  {patient.birthDate
-                    ? new Date(patient.birthDate).toLocaleDateString("es-AR")
-                    : "—"}
+                  {patient.birthDate ? calcularEdad(new Date(patient.birthDate)) : "—"}
                 </TableCell>
-                <TableCell className="truncate">{patient.address ?? "—"}</TableCell>
+                <TableCell>{patient.phone ?? "—"}</TableCell>
+                <TableCell className="truncate">
+                  {patient.estadoCivil ? ESTADO_CIVIL_LABELS[patient.estadoCivil] ?? "—" : "—"}
+                </TableCell>
+                <TableCell className="truncate">{patient.nacionalidad?.name ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.provincia?.name ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.obraSocial?.name ?? "—"}</TableCell>
+                <TableCell className="truncate">{patient.address ?? "—"}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger
@@ -216,6 +242,7 @@ export function PatientsTable({
         patient={selectedPatient}
         provincias={provincias}
         obrasSociales={obrasSociales}
+        nacionalidades={nacionalidades}
         open={editOpen}
         onOpenChange={setEditOpen}
       />

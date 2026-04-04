@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Copy, Check } from "lucide-react";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { formatDisplayName } from "@/lib/format";
 import type { UserWithProfile } from "@/types";
 
 // --- Create User Dialog ---
@@ -161,7 +162,7 @@ export function EditRoleDialog({
         <DialogHeader>
           <DialogTitle>Editar Rol</DialogTitle>
           <DialogDescription>
-            Cambiar el rol de {user.profile?.firstName} {user.profile?.lastName}
+            Cambiar el rol de {formatDisplayName(user.profile, user.email, user.role)}
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} className="space-y-4">
@@ -220,7 +221,7 @@ export function EditProfileDialog({
         <DialogHeader>
           <DialogTitle>Editar Perfil</DialogTitle>
           <DialogDescription>
-            Editar datos de {user.profile?.firstName} {user.profile?.lastName}
+            Editar datos de {formatDisplayName(user.profile, user.email, user.role)}
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} className="space-y-4">
@@ -322,7 +323,7 @@ export function ResetPasswordDialog({
           <DialogDescription>
             Se generó una contraseña temporal para{" "}
             <span className="font-medium text-foreground">
-              {user.profile?.firstName} {user.profile?.lastName}
+              {formatDisplayName(user.profile, user.email, user.role)}
             </span>
             . Copiala antes de restablecer.
           </DialogDescription>

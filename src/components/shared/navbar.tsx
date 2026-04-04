@@ -1,10 +1,9 @@
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { formatDisplayName } from "@/lib/format";
 import type { UserWithProfile } from "@/types";
 
 export function Navbar({ user }: { user: UserWithProfile }) {
-  const displayName = user.profile
-    ? `${user.profile.firstName} ${user.profile.lastName}`
-    : user.email;
+  const displayName = formatDisplayName(user.profile, user.email, user.role);
 
   return (
     <header className="flex h-14 items-center justify-between border-b px-6">

@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache";
 import { createPatientSchema, updatePatientSchema } from "@/types/schemas";
 import type { PatientWithProvincia } from "@/types";
 
+function calcularEdad(birthDate: Date): number {
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+  return age;
+}
+
 export async function getAllPatients(
   search?: string
 ): Promise<PatientWithProvincia[]> {
@@ -20,7 +28,7 @@ export async function getAllPatients(
 
   return prisma.patient.findMany({
     where,
-    include: { provincia: true, obraSocial: true },
+    include: { provincia: true, obraSocial: true, nacionalidad: true },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -36,6 +44,8 @@ export async function createPatient(_prevState: unknown, formData: FormData) {
     address: formData.get("address") || undefined,
     provinciaId: formData.get("provinciaId") || undefined,
     obraSocialId: formData.get("obraSocialId") || undefined,
+    nacionalidadId: formData.get("nacionalidadId") || undefined,
+    estadoCivil: formData.get("estadoCivil") || undefined,
   });
 
   if (!parsed.success) {
@@ -58,11 +68,13 @@ export async function createPatient(_prevState: unknown, formData: FormData) {
       email: parsed.data.email || null,
       phone: parsed.data.phone || null,
       birthDate: parsed.data.birthDate
-        ? new Date(parsed.data.birthDate)
+        ? new Date(`${parsed.data.birthDate}T00:00:00`)
         : null,
       address: parsed.data.address || null,
       provinciaId: parsed.data.provinciaId || null,
       obraSocialId: parsed.data.obraSocialId || null,
+      nacionalidadId: parsed.data.nacionalidadId || null,
+      estadoCivil: parsed.data.estadoCivil || null,
     },
   });
 
@@ -82,6 +94,8 @@ export async function updatePatient(_prevState: unknown, formData: FormData) {
     address: formData.get("address") || undefined,
     provinciaId: formData.get("provinciaId") || undefined,
     obraSocialId: formData.get("obraSocialId") || undefined,
+    nacionalidadId: formData.get("nacionalidadId") || undefined,
+    estadoCivil: formData.get("estadoCivil") || undefined,
   });
 
   if (!parsed.success) {
@@ -105,11 +119,13 @@ export async function updatePatient(_prevState: unknown, formData: FormData) {
       email: parsed.data.email || null,
       phone: parsed.data.phone || null,
       birthDate: parsed.data.birthDate
-        ? new Date(parsed.data.birthDate)
+        ? new Date(`${parsed.data.birthDate}T00:00:00`)
         : null,
       address: parsed.data.address || null,
       provinciaId: parsed.data.provinciaId || null,
       obraSocialId: parsed.data.obraSocialId || null,
+      nacionalidadId: parsed.data.nacionalidadId || null,
+      estadoCivil: parsed.data.estadoCivil || null,
     },
   });
 
