@@ -173,9 +173,172 @@ export const updateAppointmentStatusSchema = z.object({
 
 export const rescheduleAppointmentSchema = z.object({
   id: z.string().min(1),
+  professionalId: z.string().min(1, "Profesional requerido"),
   startDateTime: z.string().min(1, "Fecha y hora requerida"),
   endDateTime: z.string().min(1, "Fecha y hora requerida"),
 });
+
+// --- Historia Clínica ---
+
+const anamnesisSchema = z.object({
+  enfermedades: z.boolean().default(false),
+  enfermedadesDetalle: z.string().optional(),
+  tratamientoMedico: z.boolean().default(false),
+  tratamientoDetalle: z.string().optional(),
+  medicamentosActuales: z.boolean().default(false),
+  medicamentosActualesDetalle: z.string().optional(),
+  medicamentosPasados: z.boolean().default(false),
+  medicamentosPasadosDetalle: z.string().optional(),
+  operaciones: z.boolean().default(false),
+  operacionesDetalle: z.string().optional(),
+  transfusiones: z.boolean().default(false),
+  problemasRespiratorios: z.boolean().default(false),
+  respiratoriosDetalle: z.string().optional(),
+  cicatrizaMal: z.boolean().default(false),
+  sangraMucho: z.boolean().default(false),
+  problemaColageno: z.boolean().default(false),
+  fiebreReumatica: z.boolean().default(false),
+  fiebreReumaticaMedicacion: z.string().optional(),
+  diabetes: z.boolean().default(false),
+  diabetesControlada: z.boolean().default(false),
+  diabetesDetalle: z.string().optional(),
+  problemaCardiaco: z.boolean().default(false),
+  problemaCardiacoDetalle: z.string().optional(),
+  aspirinAnticoagulante: z.boolean().default(false),
+  aspirinFrecuencia: z.string().optional(),
+  presionAlta: z.boolean().default(false),
+  chagas: z.boolean().default(false),
+  chagasTratamiento: z.boolean().default(false),
+  problemasRenales: z.boolean().default(false),
+  ulceraGastrica: z.boolean().default(false),
+  hepatitis: z.boolean().default(false),
+  hepatitisTipo: z.string().optional(),
+  problemaHepatico: z.boolean().default(false),
+  problemaHepaticoDetalle: z.string().optional(),
+  convulsionesEpilepsia: z.boolean().default(false),
+  convulsionesMedicacion: z.string().optional(),
+  sifilisgonorrea: z.boolean().default(false),
+  otraEnfermedad: z.boolean().default(false),
+  otraEnfermedadDetalle: z.string().optional(),
+  tratamientoAlternativo: z.boolean().default(false),
+  tratamientoAlternativoDetalle: z.string().optional(),
+  medicoClinico: z.string().optional(),
+  clinicaDerivacion: z.string().optional(),
+  antecedentesPadre: z.string().optional(),
+  antecedentesMadre: z.string().optional(),
+  antecedentesHermanos: z.string().optional(),
+  fuma: z.boolean().default(false),
+  deporte: z.boolean().default(false),
+  deporteDetalle: z.string().optional(),
+  malestDeporte: z.boolean().default(false),
+});
+
+const examenClinicoSchema = z.object({
+  tejidoLabios: z.string().optional(),
+  tejidoLengua: z.string().optional(),
+  tejidoPaladar: z.string().optional(),
+  tejidoPisoBoca: z.string().optional(),
+  tejidoMucosaYugal: z.string().optional(),
+  tejidoCarrillos: z.string().optional(),
+  tejidoRebordes: z.string().optional(),
+  lesionManchas: z.boolean().default(false),
+  lesionAbultamiento: z.boolean().default(false),
+  lesionUlceraciones: z.boolean().default(false),
+  lesionAmpollas: z.boolean().default(false),
+  lesionesOtras: z.string().optional(),
+  anomalias: z.boolean().default(false),
+  anomaliasDetalle: z.string().optional(),
+  salidaPus: z.boolean().default(false),
+  salidaPusDetalle: z.string().optional(),
+  movilidadDental: z.boolean().default(false),
+  morderAlto: z.boolean().default(false),
+  caraHinchada: z.boolean().default(false),
+  caraHinchadaDetalle: z.string().optional(),
+  indicePlaca: z.string().optional(),
+  higieneEstado: z.enum(["MuyBueno", "Bueno", "Deficiente", "Malo"]).optional(),
+  sangradoEncias: z.boolean().default(false),
+  sangradoDesde: z.string().optional(),
+  sarro: z.boolean().default(false),
+  enfermedadPeriodontal: z.boolean().default(false),
+});
+
+const historiaOdontologicaSchema = z.object({
+  motivoConsulta: z.string().optional(),
+  consultoOtroProfesional: z.boolean().default(false),
+  tomoMedicamentoPrevio: z.boolean().default(false),
+  medicamentoPrevioNombre: z.string().optional(),
+  medicamentoPrevioDesde: z.string().optional(),
+  medicamentoPrevioResultado: z.boolean().default(false),
+  tuvoDolor: z.boolean().default(false),
+  dolorTipo: z.string().optional(),
+  dolorTemporal: z.string().optional(),
+  dolorModo: z.string().optional(),
+  dolorEstimulo: z.string().optional(),
+  dolorUbicacion: z.string().optional(),
+  dolorLocalizadoDonde: z.string().optional(),
+  dolorIrradiadoHacia: z.string().optional(),
+  dolorCalmante: z.string().optional(),
+  golpeDientes: z.boolean().default(false),
+  golpeCuando: z.string().optional(),
+  golpeComo: z.string().optional(),
+  fracturaDiente: z.boolean().default(false),
+  fracturaDetalle: z.string().optional(),
+  fracturaTratamiento: z.string().optional(),
+  dificultadHablar: z.string().optional(),
+  dificultadMasticar: z.string().optional(),
+  dificultadAbrirBoca: z.string().optional(),
+  dificultadTragar: z.string().optional(),
+  diagnosticoPresuntivo: z.string().optional(),
+  planTratamiento: z.string().optional(),
+  observaciones: z.string().optional(),
+});
+
+// --- Odontograma ---
+
+const faceStatusSchema = z.enum(['healthy', 'decay', 'restored', 'absent']);
+const toothOverlaySchema = z.enum(['none', 'extraction', 'absent', 'crown']);
+
+const toothStateSchema = z.object({
+  faces: z.record(z.string(), faceStatusSchema),
+  overlay: toothOverlaySchema,
+});
+
+const prosthesisSchema = z.object({
+  id: z.string(),
+  teeth: z.array(z.string()),
+});
+
+export const odontogramDataSchema = z.object({
+  teeth: z.record(z.string(), toothStateSchema).default({}),
+  prostheses: z.array(prosthesisSchema).default([]),
+});
+
+export const updateOdontogramSchema = z.object({
+  historiaClinicaId: z.string().min(1),
+  odontograma: odontogramDataSchema,
+});
+export type UpdateOdontogramInput = z.infer<typeof updateOdontogramSchema>;
+
+const historiaClinicaBaseSchema = z.object({
+  alergias: z.boolean().default(false),
+  alergiasDetalle: z.string().optional(),
+  enfermedadContagiosa: z.boolean().default(false),
+  contagiosaDetalle: z.string().optional(),
+  embarazada: z.boolean().default(false),
+  embarazadaMeses: z.string().optional(),
+  anamnesis: anamnesisSchema,
+  examenClinico: examenClinicoSchema,
+  historiaOdontologica: historiaOdontologicaSchema,
+});
+
+export const createHistoriaClinicaSchema = historiaClinicaBaseSchema.extend({
+  patientId: z.string().min(1),
+});
+export const updateHistoriaClinicaSchema = historiaClinicaBaseSchema.extend({
+  id: z.string().min(1),
+});
+export type CreateHistoriaClinicaInput = z.infer<typeof createHistoriaClinicaSchema>;
+export type UpdateHistoriaClinicaInput = z.infer<typeof updateHistoriaClinicaSchema>;
 
 export type CreateAvailabilityInput = z.infer<typeof createAvailabilitySchema>;
 export type UpdateSlotDurationInput = z.infer<typeof updateSlotDurationSchema>;

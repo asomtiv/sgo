@@ -159,10 +159,36 @@ model Patient {
   nacionalidad     Nacionalidad?  @relation(fields: [nacionalidadId], references: [id])
   estadoCivil      EstadoCivil?   @map("estado_civil")
   appointments     Appointment[]
+  historiaClinica  HistoriaClinica?
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
   @@map("patients")
+}
+
+model HistoriaClinica {
+  id                   String   @id @default(uuid()) @db.Uuid
+  patientId            String   @unique @map("patient_id") @db.Uuid
+  patient              Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  // Critical alert columns (typed for queryability)
+  alergias             Boolean  @default(false)
+  alergiasDetalle      String?  @map("alergias_detalle")
+  enfermedadContagiosa Boolean  @default(false)  @map("enfermedad_contagiosa")
+  contagiosaDetalle    String?  @map("contagiosa_detalle")
+  embarazada           Boolean  @default(false)
+  embarazadaMeses      String?  @map("embarazada_meses")
+
+  // JSONB sections
+  anamnesis              Json  @default("{}")
+  examenClinico          Json  @default("{}")  @map("examen_clinico")
+  historiaOdontologica   Json  @default("{}")  @map("historia_odontologica")
+  odontograma            Json  @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("historias_clinicas")
 }
 
 model Appointment {

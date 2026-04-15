@@ -71,21 +71,13 @@ export function MonthlyCalendar({
     <div className="border border-border bg-background overflow-hidden">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon-sm" onClick={onPrevMonth}>
-            <ChevronLeft className="size-4" />
-          </Button>
-          <Button variant="outline" size="icon-sm" onClick={onNextMonth}>
-            <ChevronRight className="size-4" />
-          </Button>
-          <h2 className="text-sm font-semibold capitalize">{monthLabel}</h2>
-        </div>
-        {totalAppointments > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {totalAppointments}{" "}
-            {totalAppointments === 1 ? "turno este mes" : "turnos este mes"}
-          </span>
-        )}
+        <Button variant="outline" size="icon-sm" onClick={onPrevMonth}>
+          <ChevronLeft className="size-4" />
+        </Button>
+        <h2 className="text-xl font-semibold capitalize">{monthLabel}</h2>
+        <Button variant="outline" size="icon-sm" onClick={onNextMonth}>
+          <ChevronRight className="size-4" />
+        </Button>
       </div>
 
       {/* ── Day-of-week header row ── */}

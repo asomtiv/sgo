@@ -35,9 +35,11 @@ function buildColorMap(specialities: Speciality[]) {
 export function ProfessionalsGrid({
   professionals,
   specialities,
+  isAdmin = true,
 }: {
   professionals: ProfessionalWithDetails[];
   specialities: Speciality[];
+  isAdmin?: boolean;
 }) {
   const [selectedProfessional, setSelectedProfessional] =
     useState<ProfessionalWithDetails | null>(null);
@@ -74,30 +76,32 @@ export function ProfessionalsGrid({
                     Inactivo
                   </span>
                 )}
-                <div className="flex gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => {
-                      setAvailabilityProfessional(prof);
-                      setAvailabilityOpen(true);
-                    }}
-                    title="Disponibilidad"
-                  >
-                    <Calendar className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => {
-                      setSelectedProfessional(prof);
-                      setEditOpen(true);
-                    }}
-                    title="Editar"
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                </div>
+                {isAdmin && (
+                  <div className="flex gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => {
+                        setAvailabilityProfessional(prof);
+                        setAvailabilityOpen(true);
+                      }}
+                      title="Disponibilidad"
+                    >
+                      <Calendar className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => {
+                        setSelectedProfessional(prof);
+                        setEditOpen(true);
+                      }}
+                      title="Editar"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Avatar + identidad */}

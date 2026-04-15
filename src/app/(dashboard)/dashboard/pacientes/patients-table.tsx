@@ -28,7 +28,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, UserPen, Trash2, Search } from "lucide-react";
+import { MoreHorizontal, UserPen, Trash2, Search, ClipboardList } from "lucide-react";
+import Link from "next/link";
 import { EditPatientDialog } from "./patient-dialogs";
 import type { PatientWithProvincia } from "@/types";
 
@@ -178,6 +179,13 @@ export function PatientsTable({
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        closeOnClick
+                        render={<Link href={`/dashboard/pacientes/${patient.id}`} />}
+                      >
+                        <ClipboardList className="size-4 mr-2" />
+                        Ver Ficha
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         closeOnClick
                         onClick={() => {

@@ -51,6 +51,7 @@ export default async function AgendaPage({
         selectedDate={selectedDate}
         currentUserRole={currentUser.role}
         monthlyData={monthlyData}
+        professionalId={professionalFilter}
       />
     </div>
   );

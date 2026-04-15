@@ -135,11 +135,11 @@ export function AgendaGrid({
                   key={prof.id}
                   className="flex-1 min-w-[200px] border-r border-zinc-300 dark:border-zinc-600 px-3 py-2.5 flex flex-col gap-0.5"
                 >
-                  <p className="text-sm font-semibold truncate leading-tight">
+                  <p className="text-sm font-bold truncate leading-tight">
                     {name}
                   </p>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-xs truncate text-muted-foreground">
                       {prof.speciality.name}
                     </p>
                     {prof.onLeave && (

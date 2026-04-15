@@ -130,6 +130,182 @@ export type PatientSearchResult = {
   lastName: string;
 };
 
+// --- Ficha Médica ---
+
+export type AnamnesisData = {
+  // Antecedentes generales
+  enfermedades: boolean;
+  enfermedadesDetalle?: string;
+  tratamientoMedico: boolean;
+  tratamientoDetalle?: string;
+  medicamentosActuales: boolean;
+  medicamentosActualesDetalle?: string;
+  medicamentosPasados: boolean;
+  medicamentosPasadosDetalle?: string;
+  operaciones: boolean;
+  operacionesDetalle?: string;
+  transfusiones: boolean;
+  problemasRespiratorios: boolean;
+  respiratoriosDetalle?: string;
+  // Cicatrización
+  cicatrizaMal: boolean;
+  sangraMucho: boolean;
+  // Colágeno y reumatismo
+  problemaColageno: boolean;
+  fiebreReumatica: boolean;
+  fiebreReumaticaMedicacion?: string;
+  // Enfermedades específicas
+  diabetes: boolean;
+  diabetesControlada: boolean;
+  diabetesDetalle?: string;
+  problemaCardiaco: boolean;
+  problemaCardiacoDetalle?: string;
+  aspirinAnticoagulante: boolean;
+  aspirinFrecuencia?: string;
+  presionAlta: boolean;
+  chagas: boolean;
+  chagasTratamiento: boolean;
+  problemasRenales: boolean;
+  ulceraGastrica: boolean;
+  hepatitis: boolean;
+  hepatitisTipo?: string;
+  problemaHepatico: boolean;
+  problemaHepaticoDetalle?: string;
+  convulsionesEpilepsia: boolean;
+  convulsionesMedicacion?: string;
+  sifilisgonorrea: boolean;
+  otraEnfermedad: boolean;
+  otraEnfermedadDetalle?: string;
+  // Tratamientos alternativos y datos del médico
+  tratamientoAlternativo: boolean;
+  tratamientoAlternativoDetalle?: string;
+  medicoClinico?: string;
+  clinicaDerivacion?: string;
+  // Antecedentes familiares
+  antecedentesPadre?: string;
+  antecedentesMadre?: string;
+  antecedentesHermanos?: string;
+  // Hábitos
+  fuma: boolean;
+  deporte: boolean;
+  deporteDetalle?: string;
+  malestDeporte: boolean;
+};
+
+export type ExamenClinicoData = {
+  // Tejidos blandos
+  tejidoLabios?: string;
+  tejidoLengua?: string;
+  tejidoPaladar?: string;
+  tejidoPisoBoca?: string;
+  tejidoMucosaYugal?: string;
+  tejidoCarrillos?: string;
+  tejidoRebordes?: string;
+  // Lesiones
+  lesionManchas: boolean;
+  lesionAbultamiento: boolean;
+  lesionUlceraciones: boolean;
+  lesionAmpollas: boolean;
+  lesionesOtras?: string;
+  // Anomalías / pus
+  anomalias: boolean;
+  anomaliasDetalle?: string;
+  salidaPus: boolean;
+  salidaPusDetalle?: string;
+  // Movilidad y oclusión
+  movilidadDental: boolean;
+  morderAlto: boolean;
+  caraHinchada: boolean;
+  caraHinchadaDetalle?: string;
+  // Higiene y estado bucal
+  indicePlaca?: string;
+  higieneEstado?: "MuyBueno" | "Bueno" | "Deficiente" | "Malo";
+  sangradoEncias: boolean;
+  sangradoDesde?: string;
+  sarro: boolean;
+  enfermedadPeriodontal: boolean;
+};
+
+export type HistoriaOdontologicaData = {
+  // Motivo de consulta
+  motivoConsulta?: string;
+  consultoOtroProfesional: boolean;
+  tomoMedicamentoPrevio: boolean;
+  medicamentoPrevioNombre?: string;
+  medicamentoPrevioDesde?: string;
+  medicamentoPrevioResultado: boolean;
+  // Dolor
+  tuvoDolor: boolean;
+  dolorTipo?: string; // "Suave" | "Moderado" | "Intenso"
+  dolorTemporal?: string; // "Temporario" | "Intermitente" | "Continuo"
+  dolorModo?: string; // "Espontáneo" | "Provocado"
+  dolorEstimulo?: string; // "Al frío" | "Al calor"
+  dolorUbicacion?: string; // "Localizado" | "Irradiado"
+  dolorLocalizadoDonde?: string;
+  dolorIrradiadoHacia?: string;
+  dolorCalmante?: string;
+  // Traumatismos
+  golpeDientes: boolean;
+  golpeCuando?: string;
+  golpeComo?: string;
+  fracturaDiente: boolean;
+  fracturaDetalle?: string;
+  fracturaTratamiento?: string;
+  // Función
+  dificultadHablar?: string;
+  dificultadMasticar?: string;
+  dificultadAbrirBoca?: string;
+  dificultadTragar?: string;
+  // Diagnóstico y plan
+  diagnosticoPresuntivo?: string;
+  planTratamiento?: string;
+  observaciones?: string;
+};
+
+// --- Odontograma ---
+
+export type OdontogramFaceName = 'vestibular' | 'lingual' | 'mesial' | 'distal' | 'oclusal';
+
+export type OdontogramFaceStatus = 'healthy' | 'decay' | 'restored' | 'absent';
+
+export type OdontogramToothOverlay = 'none' | 'extraction' | 'absent' | 'crown';
+
+export type OdontogramToothState = {
+  faces: Record<OdontogramFaceName, OdontogramFaceStatus>;
+  overlay: OdontogramToothOverlay;
+};
+
+export type OdontogramProsthesis = {
+  id: string;
+  teeth: string[];
+};
+
+export type OdontogramData = {
+  teeth: Record<string, OdontogramToothState>;
+  prostheses: OdontogramProsthesis[];
+};
+
+export type HistoriaClinicaData = {
+  id: string;
+  patientId: string;
+  alergias: boolean;
+  alergiasDetalle: string | null;
+  enfermedadContagiosa: boolean;
+  contagiosaDetalle: string | null;
+  embarazada: boolean;
+  embarazadaMeses: string | null;
+  anamnesis: AnamnesisData;
+  examenClinico: ExamenClinicoData;
+  historiaOdontologica: HistoriaOdontologicaData;
+  odontograma: OdontogramData;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type PatientFichaData = PatientWithProvincia & {
+  historiaClinica: HistoriaClinicaData | null;
+};
+
 // --- Vista Mensual ---
 
 export type MonthlyAppointmentCounts = Record<string, number>; // "YYYY-MM-DD" → count

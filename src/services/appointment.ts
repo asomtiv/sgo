@@ -19,6 +19,18 @@ import type {
 
 // --- Read functions ---
 
+export async function getActiveProfessionals() {
+  return prisma.professional.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      slotDuration: true,
+      user: { select: { profile: { select: { firstName: true, lastName: true } } } },
+    },
+    orderBy: { user: { profile: { lastName: "asc" } } },
+  });
+}
+
 export async function getAgendaData(
   date: string,
   professionalId?: string
@@ -295,6 +307,7 @@ export async function rescheduleAppointment(
 ) {
   const parsed = rescheduleAppointmentSchema.safeParse({
     id: formData.get("id"),
+    professionalId: formData.get("professionalId"),
     startDateTime: formData.get("startDateTime"),
     endDateTime: formData.get("endDateTime"),
   });
@@ -304,7 +317,7 @@ export async function rescheduleAppointment(
     return { error: firstError };
   }
 
-  const { id, startDateTime, endDateTime } = parsed.data;
+  const { id, professionalId, startDateTime, endDateTime } = parsed.data;
   const startDT = new Date(startDateTime);
   const endDT = new Date(endDateTime);
 
@@ -313,9 +326,17 @@ export async function rescheduleAppointment(
     return { error: "Turno no encontrado" };
   }
 
+  const professional = await prisma.professional.findUnique({
+    where: { id: professionalId },
+    select: { isActive: true },
+  });
+  if (!professional?.isActive) {
+    return { error: "El profesional seleccionado no está activo" };
+  }
+
   // 1. Availability check
   const availCheck = await checkProfessionalAvailability(
-    existing.professionalId,
+    professionalId,
     startDT,
     endDT
   );
@@ -323,10 +344,10 @@ export async function rescheduleAppointment(
     return { error: availCheck.reason! };
   }
 
-  // 2. Professional collision (excluding this appointment)
+  // 2. Professional collision (excluding this appointment if same professional)
   const profCollision = await prisma.appointment.findFirst({
     where: {
-      professionalId: existing.professionalId,
+      professionalId,
       id: { not: id },
       status: { not: "Cancelado" },
       startDateTime: { lt: endDT },
@@ -354,6 +375,7 @@ export async function rescheduleAppointment(
   await prisma.appointment.update({
     where: { id },
     data: {
+      professionalId,
       startDateTime: startDT,
       endDateTime: endDT,
       status: "Pendiente",

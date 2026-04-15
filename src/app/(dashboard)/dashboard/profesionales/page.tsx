@@ -9,13 +9,15 @@ import { Stethoscope } from "lucide-react";
 export default async function ProfesionalesPage() {
   const currentUser = await getCurrentUser();
 
-  if (!currentUser || currentUser.role !== "Admin") {
+  if (!currentUser || (currentUser.role !== "Admin" && currentUser.role !== "Recepcion")) {
     redirect("/dashboard");
   }
 
+  const isAdmin = currentUser.role === "Admin";
+
   const [professionals, availableUsers, specialities] = await Promise.all([
     getAllProfessionals(),
-    getAvailableUsersForProfessional(),
+    isAdmin ? getAvailableUsersForProfessional() : Promise.resolve([]),
     getAllSpecialities(),
   ]);
 
@@ -28,10 +30,12 @@ export default async function ProfesionalesPage() {
             Gestión de profesionales de la clínica
           </p>
         </div>
-        <CreateProfessionalDialog
-          availableUsers={availableUsers}
-          specialities={specialities}
-        />
+        {isAdmin && (
+          <CreateProfessionalDialog
+            availableUsers={availableUsers}
+            specialities={specialities}
+          />
+        )}
       </div>
 
       {professionals.length === 0 ? (
@@ -46,6 +50,7 @@ export default async function ProfesionalesPage() {
         <ProfessionalsGrid
           professionals={professionals}
           specialities={specialities}
+          isAdmin={isAdmin}
         />
       )}
     </div>

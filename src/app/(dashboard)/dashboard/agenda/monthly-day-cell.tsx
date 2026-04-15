@@ -107,17 +107,6 @@ export function MonthlyDayCell({
 
       </div>
 
-      {/* Heatmap bar — flush to the bottom */}
-      {isInMonth && (
-        <div className="h-1.5 w-full bg-border/40 overflow-hidden shrink-0">
-          {pct > 0 && (
-            <div
-              className={cn("h-full transition-all duration-500", color)}
-              style={{ width: `${pct}%` }}
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }
