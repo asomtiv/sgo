@@ -95,6 +95,7 @@ export function RescheduleDialog({
           <DialogTitle>Reprogramar Turno</DialogTitle>
           <DialogDescription>
             {appointment.patient.lastName}, {appointment.patient.firstName}
+            {appointment.patient.dni ? ` — DNI ${appointment.patient.dni}` : ""}
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} className="space-y-4">
@@ -115,7 +116,7 @@ export function RescheduleDialog({
                   }}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent alignItemWithTrigger={false}>
                 {professionals.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {formatDisplayName(p.user.profile, p.id, "Profesional")}

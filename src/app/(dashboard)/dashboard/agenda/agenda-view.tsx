@@ -56,17 +56,19 @@ function DaySummaryPanel({
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="border border-border p-6 flex flex-col justify-center items-center text-center flex-1">
-        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Día seleccionado</p>
-        <p className="text-6xl font-bold capitalize leading-tight">
+      <div className="border border-border bg-card p-6 flex flex-col justify-center items-center text-center flex-1">
+        <p className="text-2xl font-semibold capitalize leading-tight">
           {format(dateObj, "EEEE", { locale: es })}
         </p>
-        <p className="text-xl text-muted-foreground capitalize mt-2">
-          {format(dateObj, "d 'de' MMMM, yyyy", { locale: es })}
+        <p className="text-8xl font-bold leading-none">
+          {format(dateObj, "d")}
+        </p>
+        <p className="text-2xl font-normal capitalize leading-tight w-full truncate text-center">
+          {format(dateObj, "MMMM yyyy", { locale: es })}
         </p>
       </div>
 
-      <div className="border border-border p-4">
+      <div className="border border-border bg-card p-4">
         <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Turnos del día</p>
         <div className="space-y-2">
           <div className="flex items-center justify-between py-1 border-b border-border">
@@ -92,7 +94,7 @@ function DaySummaryPanel({
         </div>
       </div>
 
-      <div className="border border-border p-4">
+      <div className="border border-border bg-card p-4">
         <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Turnos del mes</p>
         <div className="flex items-center justify-between py-1">
           <span className="text-sm font-medium capitalize">{monthLabel}</span>
@@ -180,7 +182,7 @@ export function AgendaView({
       </div>
 
       {data.professionals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-border">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-border bg-card">
           <p className="text-sm text-muted-foreground">
             No hay profesionales con horarios configurados para este día.
           </p>

@@ -44,6 +44,7 @@ export async function createPatient(_prevState: unknown, formData: FormData) {
     address: formData.get("address") || undefined,
     provinciaId: formData.get("provinciaId") || undefined,
     obraSocialId: formData.get("obraSocialId") || undefined,
+    nroAfiliado: formData.get("nroAfiliado") || undefined,
     nacionalidadId: formData.get("nacionalidadId") || undefined,
     estadoCivil: formData.get("estadoCivil") || undefined,
   });
@@ -73,6 +74,7 @@ export async function createPatient(_prevState: unknown, formData: FormData) {
       address: parsed.data.address || null,
       provinciaId: parsed.data.provinciaId || null,
       obraSocialId: parsed.data.obraSocialId || null,
+      nroAfiliado: parsed.data.nroAfiliado || null,
       nacionalidadId: parsed.data.nacionalidadId || null,
       estadoCivil: parsed.data.estadoCivil || null,
     },
@@ -94,6 +96,7 @@ export async function updatePatient(_prevState: unknown, formData: FormData) {
     address: formData.get("address") || undefined,
     provinciaId: formData.get("provinciaId") || undefined,
     obraSocialId: formData.get("obraSocialId") || undefined,
+    nroAfiliado: formData.get("nroAfiliado") || undefined,
     nacionalidadId: formData.get("nacionalidadId") || undefined,
     estadoCivil: formData.get("estadoCivil") || undefined,
   });
@@ -124,6 +127,7 @@ export async function updatePatient(_prevState: unknown, formData: FormData) {
       address: parsed.data.address || null,
       provinciaId: parsed.data.provinciaId || null,
       obraSocialId: parsed.data.obraSocialId || null,
+      nroAfiliado: parsed.data.nroAfiliado || null,
       nacionalidadId: parsed.data.nacionalidadId || null,
       estadoCivil: parsed.data.estadoCivil || null,
     },
@@ -134,6 +138,15 @@ export async function updatePatient(_prevState: unknown, formData: FormData) {
 }
 
 export async function deletePatient(id: string) {
+  const appointmentCount = await prisma.appointment.count({
+    where: { patientId: id, status: { not: "Cancelado" } },
+  });
+  if (appointmentCount > 0) {
+    return {
+      error: `El paciente tiene ${appointmentCount} turno${appointmentCount > 1 ? "s" : ""} activo${appointmentCount > 1 ? "s" : ""}. Cancelelos antes de eliminar el paciente.`,
+    };
+  }
+
   await prisma.patient.delete({ where: { id } });
   revalidatePath("/dashboard/pacientes");
   return { success: true };

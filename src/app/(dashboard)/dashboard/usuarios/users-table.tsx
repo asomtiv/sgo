@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { toggleUserActive, deleteUser } from "@/services/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -113,8 +112,7 @@ export function UsersTable({
         <h2 className="text-base font-semibold">{title}</h2>
         <Badge variant="outline">{users.length}</Badge>
       </div>
-      <Card>
-      <CardContent className="px-0 py-0">
+      <div className="rounded-md border bg-card">
         {users.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">
             No hay usuarios en este rol.
@@ -128,7 +126,7 @@ export function UsersTable({
                 <col className="w-[16%]" />
                 <col className="w-[12%]" />
                 <col className="w-[14%]" />
-                <col className="w-[10%]" />
+                <col className="w-[14%]" />
               </colgroup>
               <TableHeader>
                 <TableRow>
@@ -137,7 +135,7 @@ export function UsersTable({
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="w-10" />
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -167,60 +165,63 @@ export function UsersTable({
                       )}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={<Button variant="ghost" size="icon-sm" />}
+                      <div className="flex items-center justify-end gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Restablecer contraseña"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setResetPasswordOpen(true);
+                          }}
                         >
-                          <MoreHorizontal className="size-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            closeOnClick
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setEditProfileOpen(true);
-                            }}
+                          <KeyRound className="size-4 text-amber-500" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={<Button variant="ghost" size="icon-sm" />}
                           >
-                            <UserPen className="size-4 mr-2" />
-                            Editar Perfil
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            closeOnClick
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setEditRoleOpen(true);
-                            }}
-                          >
-                            <ShieldCheck className="size-4 mr-2" />
-                            Editar Rol
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            closeOnClick
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setResetPasswordOpen(true);
-                            }}
-                          >
-                            <KeyRound className="size-4 mr-2" />
-                            Restablecer Contraseña
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            closeOnClick
-                            onClick={() => openConfirm(user)}
-                          >
-                            <Power className="size-4 mr-2" />
-                            {user.isActive ? "Desactivar" : "Activar"}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            closeOnClick
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => openDelete(user)}
-                          >
-                            <Trash2 className="size-4 mr-2" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            <MoreHorizontal className="size-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              closeOnClick
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setEditProfileOpen(true);
+                              }}
+                            >
+                              <UserPen className="size-4 mr-2" />
+                              Editar Perfil
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              closeOnClick
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setEditRoleOpen(true);
+                              }}
+                            >
+                              <ShieldCheck className="size-4 mr-2" />
+                              Editar Rol
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              closeOnClick
+                              onClick={() => openConfirm(user)}
+                            >
+                              <Power className="size-4 mr-2" />
+                              {user.isActive ? "Desactivar" : "Activar"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              closeOnClick
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => openDelete(user)}
+                            >
+                              <Trash2 className="size-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -323,8 +324,7 @@ export function UsersTable({
             />
           </>
         )}
-      </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -189,6 +189,10 @@ export function CreatePatientDialog({
               </Select>
             </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="create-p-nroAfiliado">Nro. de Afiliado</Label>
+            <Input id="create-p-nroAfiliado" name="nroAfiliado" placeholder="Ej: 12345678" />
+          </div>
           <DialogFooter>
             <Button type="submit" disabled={pending}>
               {pending ? "Creando..." : "Crear Paciente"}
@@ -342,6 +346,10 @@ export function EditPatientDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-p-nroAfiliado">Nro. de Afiliado</Label>
+            <Input id="edit-p-nroAfiliado" name="nroAfiliado" defaultValue={patient.nroAfiliado ?? ""} placeholder="Ej: 12345678" />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending}>

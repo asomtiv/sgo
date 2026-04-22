@@ -1,4 +1,12 @@
-import type { Role, TipoAusencia, EstadoTurno, EstadoCivil } from "@/generated/prisma/client";
+import type {
+  Role,
+  TipoAusencia,
+  EstadoTurno,
+  EstadoCivil,
+  CategoriaProducto,
+  UnidadMedida,
+  TipoMovimiento,
+} from "@/generated/prisma/client";
 
 export type UserWithProfile = {
   id: string;
@@ -28,6 +36,7 @@ export type PatientWithProvincia = {
   provincia: { id: string; name: string } | null;
   obraSocialId: string | null;
   obraSocial: { id: string; name: string } | null;
+  nroAfiliado: string | null;
   nacionalidadId: string | null;
   nacionalidad: { id: string; name: string } | null;
   estadoCivil: EstadoCivil | null;
@@ -93,7 +102,8 @@ export type AppointmentWithDetails = {
   status: EstadoTurno;
   notes: string | null;
   cancellationReason: string | null;
-  patient: { id: string; dni: string; firstName: string; lastName: string };
+  createdAt: Date;
+  patient: { id: string; dni: string; firstName: string; lastName: string; phone: string | null };
   professional: {
     id: string;
     slotDuration: number;
@@ -102,6 +112,10 @@ export type AppointmentWithDetails = {
       role: Role;
     };
   };
+  createdBy: {
+    profile: { firstName: string; lastName: string } | null;
+    role: Role;
+  } | null;
 };
 
 export type AgendaProfessional = {
@@ -313,4 +327,43 @@ export type MonthlyAppointmentCounts = Record<string, number>; // "YYYY-MM-DD" â
 export type MonthlyData = {
   counts: MonthlyAppointmentCounts;
   month: string; // "YYYY-MM"
+};
+
+// --- Insumos ---
+
+export type ProductoWithStock = {
+  id: string;
+  name: string;
+  normalizedName: string;
+  description: string | null;
+  category: CategoriaProducto;
+  unit: UnidadMedida;
+  minStock: number;
+  isActive: boolean;
+  currentStock: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type StockMovementWithDetails = {
+  id: string;
+  productoId: string;
+  type: TipoMovimiento;
+  quantity: number;
+  reason: string;
+  lote: string | null;
+  expirationDate: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  producto: { id: string; name: string; unit: UnidadMedida };
+  createdBy: {
+    profile: { firstName: string; lastName: string } | null;
+  };
+};
+
+export type ProductoForSelect = {
+  id: string;
+  name: string;
+  unit: UnidadMedida;
+  isActive: boolean;
 };

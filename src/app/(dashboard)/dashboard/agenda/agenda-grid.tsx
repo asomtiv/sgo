@@ -114,7 +114,7 @@ export function AgendaGrid({
   const clickSlotHeight = (CLICK_INTERVAL / GRID_BASE_INTERVAL) * ROW_HEIGHT;
 
   return (
-    <div className="border border-zinc-300 dark:border-zinc-600 bg-background rounded-sm overflow-hidden">
+    <div className="border border-zinc-300 dark:border-zinc-600 bg-card rounded-sm overflow-hidden">
       <div className="overflow-x-auto">
         {/* ── Fixed header + scrollable body together so they scroll horizontally in sync ── */}
         <div style={{ minWidth: TIME_COL_WIDTH + professionals.length * 200 }}>

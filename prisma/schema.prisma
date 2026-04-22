@@ -38,15 +38,43 @@ enum EstadoCivil {
   SeparadoLegalmente
 }
 
+enum CategoriaProducto {
+  MaterialDental
+  Instrumental
+  Descartable
+  Medicamento
+  Otro
+}
+
+enum UnidadMedida {
+  Unidad
+  Caja
+  Paquete
+  Litro
+  Mililitro
+  Kilogramo
+  Gramo
+  Metro
+  Rollo
+}
+
+enum TipoMovimiento {
+  Entrada
+  Salida
+  Ajuste
+}
+
 model User {
   id           String        @id @default(uuid()) @db.Uuid
   email        String        @unique
   role         Role          @default(Recepcion)
   isActive     Boolean       @default(true) @map("is_active")
-  profile      Profile?
-  professional Professional?
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  profile             Profile?
+  professional        Professional?
+  createdAppointments Appointment[]    @relation("AppointmentCreatedBy")
+  createdMovements    StockMovement[]  @relation("MovementCreatedBy")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -155,6 +183,7 @@ model Patient {
   provincia        Provincia?     @relation(fields: [provinciaId], references: [id])
   obraSocialId     String?        @map("obra_social_id") @db.Uuid
   obraSocial       ObraSocial?    @relation(fields: [obraSocialId], references: [id])
+  nroAfiliado      String?        @map("nro_afiliado")
   nacionalidadId   String?        @map("nacionalidad_id") @db.Uuid
   nacionalidad     Nacionalidad?  @relation(fields: [nacionalidadId], references: [id])
   estadoCivil      EstadoCivil?   @map("estado_civil")
@@ -200,10 +229,46 @@ model Appointment {
   status             EstadoTurno  @default(Pendiente)
   notes              String?
   cancellationReason String?      @map("cancellation_reason")
+  createdById        String?      @map("created_by_id") @db.Uuid
   patient            Patient      @relation(fields: [patientId], references: [id])
   professional       Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdBy          User?        @relation("AppointmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
 
   @@map("appointments")
+}
+
+model Producto {
+  id             String            @id @default(uuid()) @db.Uuid
+  name           String            @unique
+  normalizedName String            @unique @map("normalized_name")
+  description    String?
+  category       CategoriaProducto
+  unit           UnidadMedida
+  minStock       Int               @default(0) @map("min_stock")
+  isActive       Boolean           @default(true) @map("is_active")
+  movements      StockMovement[]
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  @@map("productos")
+}
+
+model StockMovement {
+  id             String          @id @default(uuid()) @db.Uuid
+  productoId     String          @map("producto_id") @db.Uuid
+  type           TipoMovimiento
+  quantity       Int
+  reason         String
+  lote           String?
+  expirationDate DateTime?       @map("expiration_date")
+  notes          String?
+  createdById    String          @map("created_by_id") @db.Uuid
+  producto       Producto        @relation(fields: [productoId], references: [id])
+  createdBy      User            @relation("MovementCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@map("stock_movements")
 }

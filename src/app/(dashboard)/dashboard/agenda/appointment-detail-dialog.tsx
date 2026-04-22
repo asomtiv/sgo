@@ -1,11 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { CalendarClock } from "lucide-react";
 import { toast } from "sonner";
-import { updateAppointmentStatus } from "@/services/appointment";
+import { updateAppointmentStatus, deleteAppointment } from "@/services/appointment";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -35,6 +34,15 @@ function formatDateTime(date: Date): string {
   });
 }
 
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <p className="font-medium mt-0.5">{value}</p>
+    </div>
+  );
+}
+
 export function AppointmentDetailDialog({
   appointment,
   open,
@@ -50,24 +58,37 @@ export function AppointmentDetailDialog({
     updateAppointmentStatus,
     null
   );
-  const [cancelling, setCancelling] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
+  const [deleteState, deleteFormAction, deletePending] = useActionState(
+    deleteAppointment,
+    null
+  );
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (state?.success) {
       toast.success("Estado del turno actualizado");
       onOpenChange(false);
-      setCancelling(false);
-      setCancelReason("");
+      setConfirmCancel(false);
     } else if (state?.error) {
       toast.error(state.error);
     }
   }, [state, onOpenChange]);
 
   useEffect(() => {
+    if (deleteState?.success) {
+      toast.success("Turno eliminado");
+      onOpenChange(false);
+      setConfirmDelete(false);
+    } else if (deleteState?.error) {
+      toast.error(deleteState.error);
+    }
+  }, [deleteState, onOpenChange]);
+
+  useEffect(() => {
     if (!open) {
-      setCancelling(false);
-      setCancelReason("");
+      setConfirmCancel(false);
+      setConfirmDelete(false);
     }
   }, [open]);
 
@@ -79,13 +100,28 @@ export function AppointmentDetailDialog({
     "Profesional",
     appointment.professional.user.role
   );
+  const assignedByName = appointment.createdBy
+    ? formatDisplayName(
+        appointment.createdBy.profile,
+        "Usuario",
+        appointment.createdBy.role
+      )
+    : "—";
+
+  const endTime = new Date(appointment.endDateTime).toLocaleString("sv-SE", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
   const isEditable =
     appointment.status === "Pendiente" || appointment.status === "Confirmado";
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Detalle del Turno</DialogTitle>
           <DialogDescription>
@@ -94,156 +130,174 @@ export function AppointmentDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
-          {/* Patient info */}
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">Paciente</span>
-              <p className="font-medium">
-                {appointment.patient.lastName},{" "}
-                {appointment.patient.firstName}
-              </p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">DNI</span>
-              <p className="font-medium">{appointment.patient.dni}</p>
-            </div>
+        <div className="space-y-4 text-sm">
+          {/* Paciente */}
+          <div className="grid grid-cols-3 gap-3">
+            <Field
+              label="Paciente"
+              value={`${appointment.patient.lastName}, ${appointment.patient.firstName}`}
+            />
+            <Field label="DNI" value={appointment.patient.dni} />
+            <Field label="Celular" value={appointment.patient.phone ?? "—"} />
           </div>
 
-          {/* Time */}
-          <div className="text-sm">
-            <span className="text-muted-foreground">Horario</span>
-            <p className="font-medium">
-              {formatDateTime(new Date(appointment.startDateTime))} —{" "}
-              {new Date(appointment.endDateTime).toLocaleString("sv-SE", {
-                timeZone: "America/Argentina/Buenos_Aires",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}
-            </p>
+          {/* Turno */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="Horario"
+              value={`${formatDateTime(new Date(appointment.startDateTime))} — ${endTime}`}
+            />
+            <Field
+              label="Estado"
+              value={
+                <Badge
+                  className={cn(colors.bg, colors.text, colors.border, "border mt-0.5")}
+                >
+                  {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                </Badge>
+              }
+            />
           </div>
 
-          {/* Status */}
-          <div className="text-sm">
-            <span className="text-muted-foreground">Estado</span>
-            <div className="mt-0.5">
-              <Badge
-                className={cn(colors.bg, colors.text, colors.border, "border")}
-              >
-                {APPOINTMENT_STATUS_LABELS[appointment.status]}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Notes */}
+          {/* Notas */}
           {appointment.notes && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Notas</span>
-              <p>{appointment.notes}</p>
-            </div>
+            <Field label="Notas" value={appointment.notes} />
           )}
 
-          {/* Cancellation reason */}
+          {/* Motivo de cancelación */}
           {appointment.cancellationReason && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">
-                Motivo de cancelación
-              </span>
-              <p>{appointment.cancellationReason}</p>
-            </div>
+            <Field
+              label="Motivo de cancelación"
+              value={appointment.cancellationReason}
+            />
           )}
 
-          {/* Cancel form */}
-          {cancelling && (
-            <form action={formAction} className="space-y-2">
-              <input type="hidden" name="id" value={appointment.id} />
-              <input type="hidden" name="status" value="Cancelado" />
-              <div className="space-y-1">
-                <Label htmlFor="cancel-reason" className="text-xs">
-                  Motivo de cancelación
-                </Label>
-                <Input
-                  id="cancel-reason"
-                  name="cancellationReason"
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Motivo..."
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
+          {/* Auditoría */}
+          <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border">
+            <Field label="Asignado por" value={assignedByName} />
+            <Field
+              label="Fecha de asignación"
+              value={formatDateTime(new Date(appointment.createdAt))}
+            />
+          </div>
+
+        </div>
+
+        {(appointment.status === "Ausente" || appointment.status === "Completado") && (
+          <DialogFooter className="flex-wrap gap-2">
+            {confirmDelete ? (
+              <>
+                <span className="text-sm text-muted-foreground self-center mr-auto">
+                  ¿Está seguro de eliminar este turno?
+                </span>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setCancelling(false)}
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deletePending}
                 >
-                  Volver
+                  No
                 </Button>
-                <Button
-                  type="submit"
-                  variant="destructive"
-                  size="sm"
-                  disabled={pending || !cancelReason.trim()}
-                >
-                  {pending ? "Cancelando..." : "Confirmar Cancelación"}
-                </Button>
-              </div>
-            </form>
-          )}
-        </div>
-
-        {isEditable && !cancelling && (
-          <DialogFooter className="flex-wrap gap-2">
-            {appointment.status === "Pendiente" && (
-              <form action={formAction}>
-                <input type="hidden" name="id" value={appointment.id} />
-                <input type="hidden" name="status" value="Confirmado" />
-                <Button type="submit" size="sm" disabled={pending}>
-                  {pending ? "..." : "Confirmar"}
-                </Button>
-              </form>
-            )}
-            {appointment.status === "Confirmado" && (
-              <>
-                <form action={formAction}>
+                <form action={deleteFormAction}>
                   <input type="hidden" name="id" value={appointment.id} />
-                  <input type="hidden" name="status" value="Completado" />
-                  <Button type="submit" size="sm" disabled={pending}>
-                    {pending ? "..." : "Completar"}
-                  </Button>
-                </form>
-                <form action={formAction}>
-                  <input type="hidden" name="id" value={appointment.id} />
-                  <input type="hidden" name="status" value="Ausente" />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    disabled={pending}
-                  >
-                    {pending ? "..." : "Marcar Ausente"}
+                  <Button type="submit" variant="destructive" size="sm" disabled={deletePending}>
+                    {deletePending ? "Eliminando..." : "Sí, eliminar"}
                   </Button>
                 </form>
               </>
+            ) : (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => setConfirmDelete(true)}
+              >
+                Eliminar Turno
+              </Button>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onReschedule}
-            >
-              Reprogramar
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={() => setCancelling(true)}
-            >
-              Cancelar Turno
-            </Button>
+          </DialogFooter>
+        )}
+
+        {isEditable && (
+          <DialogFooter className="block">
+            {confirmCancel ? (
+              <div className="flex items-center justify-between w-full gap-2">
+                <span className="text-sm text-muted-foreground">
+                  ¿Está seguro de cancelar el turno?
+                </span>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setConfirmCancel(false)}
+                    disabled={pending}
+                  >
+                    No
+                  </Button>
+                  <form action={formAction}>
+                    <input type="hidden" name="id" value={appointment.id} />
+                    <input type="hidden" name="status" value="Cancelado" />
+                    <Button type="submit" variant="destructive" size="sm" disabled={pending}>
+                      {pending ? "Cancelando..." : "Sí, cancelar"}
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full gap-2">
+                {/* Left: reschedule icon */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={onReschedule}
+                  title="Reprogramar"
+                >
+                  <CalendarClock className="size-4" />
+                </Button>
+
+                {/* Right: action buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setConfirmCancel(true)}
+                  >
+                    Cancelar Turno
+                  </Button>
+                  {appointment.status === "Pendiente" && (
+                    <form action={formAction}>
+                      <input type="hidden" name="id" value={appointment.id} />
+                      <input type="hidden" name="status" value="Confirmado" />
+                      <Button type="submit" size="sm" disabled={pending}>
+                        {pending ? "..." : "Confirmar"}
+                      </Button>
+                    </form>
+                  )}
+                  {appointment.status === "Confirmado" && (
+                    <>
+                      <form action={formAction}>
+                        <input type="hidden" name="id" value={appointment.id} />
+                        <input type="hidden" name="status" value="Ausente" />
+                        <Button type="submit" variant="outline" size="sm" disabled={pending}>
+                          {pending ? "..." : "Marcar Ausente"}
+                        </Button>
+                      </form>
+                      <form action={formAction}>
+                        <input type="hidden" name="id" value={appointment.id} />
+                        <input type="hidden" name="status" value="Completado" />
+                        <Button type="submit" size="sm" disabled={pending}>
+                          {pending ? "..." : "Completar"}
+                        </Button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </DialogFooter>
         )}
       </DialogContent>

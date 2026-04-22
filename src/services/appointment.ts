@@ -8,6 +8,7 @@ import {
   rescheduleAppointmentSchema,
 } from "@/types/schemas";
 import { checkProfessionalAvailability } from "@/services/availability-check";
+import { getCurrentUser } from "@/services/user";
 import { dayStartEnd } from "@/lib/timezone";
 import type { Role } from "@/generated/prisma/client";
 import type {
@@ -108,6 +109,7 @@ export async function getAgendaData(
                 dni: true,
                 firstName: true,
                 lastName: true,
+                phone: true,
               },
             },
             professional: {
@@ -121,6 +123,14 @@ export async function getAgendaData(
                       select: { firstName: true, lastName: true },
                     },
                   },
+                },
+              },
+            },
+            createdBy: {
+              select: {
+                role: true,
+                profile: {
+                  select: { firstName: true, lastName: true },
                 },
               },
             },
@@ -247,6 +257,8 @@ export async function createAppointment(
     return { error: "El paciente ya tiene un turno en ese horario" };
   }
 
+  const currentUser = await getCurrentUser();
+
   await prisma.appointment.create({
     data: {
       patientId,
@@ -254,6 +266,7 @@ export async function createAppointment(
       startDateTime: startDT,
       endDateTime: endDT,
       notes: notes || null,
+      createdById: currentUser?.id ?? null,
     },
   });
 
@@ -277,10 +290,6 @@ export async function updateAppointmentStatus(
   }
 
   const { id, status, cancellationReason } = parsed.data;
-
-  if (status === "Cancelado" && !cancellationReason) {
-    return { error: "Debe indicar el motivo de cancelación" };
-  }
 
   const existing = await prisma.appointment.findUnique({ where: { id } });
   if (!existing) {
@@ -381,6 +390,24 @@ export async function rescheduleAppointment(
       status: "Pendiente",
     },
   });
+
+  revalidatePath("/dashboard/agenda");
+  return { success: true };
+}
+
+export async function deleteAppointment(
+  _prevState: unknown,
+  formData: FormData
+) {
+  const id = formData.get("id");
+  if (!id || typeof id !== "string") return { error: "ID inválido" };
+
+  const existing = await prisma.appointment.findUnique({ where: { id } });
+  if (!existing) return { error: "Turno no encontrado" };
+  if (existing.status !== "Ausente" && existing.status !== "Completado")
+    return { error: "Solo se pueden eliminar turnos marcados como Ausente o Completado" };
+
+  await prisma.appointment.delete({ where: { id } });
 
   revalidatePath("/dashboard/agenda");
   return { success: true };

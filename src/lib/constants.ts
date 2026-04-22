@@ -1,4 +1,10 @@
-import type { TipoAusencia, EstadoTurno } from "@/generated/prisma/client";
+import type {
+  TipoAusencia,
+  EstadoTurno,
+  CategoriaProducto,
+  UnidadMedida,
+  TipoMovimiento,
+} from "@/generated/prisma/client";
 
 export const DAYS_OF_WEEK = [
   { value: 0, label: "Domingo" },
@@ -80,4 +86,71 @@ export const SPECIALITY_COLORS = [
   { bg: "bg-indigo-500",  header: "bg-indigo-100 dark:bg-indigo-900/40", text: "text-indigo-800 dark:text-indigo-300" },
   { bg: "bg-pink-500",    header: "bg-pink-100 dark:bg-pink-900/40",     text: "text-pink-800 dark:text-pink-300" },
   { bg: "bg-cyan-500",    header: "bg-cyan-100 dark:bg-cyan-900/40",     text: "text-cyan-800 dark:text-cyan-300" },
+] as const;
+
+// --- Insumos ---
+
+export const CATEGORIA_PRODUCTO_LABELS: Record<CategoriaProducto, string> = {
+  MaterialDental: "Material Dental",
+  Instrumental: "Instrumental",
+  Descartable: "Descartable",
+  Medicamento: "Medicamento",
+  Otro: "Otro",
+};
+
+export const UNIDAD_MEDIDA_LABELS: Record<UnidadMedida, string> = {
+  Unidad: "Unidad",
+  Caja: "Caja",
+  Paquete: "Paquete",
+  Litro: "Litro",
+  Mililitro: "Mililitro",
+  Kilogramo: "Kilogramo",
+  Gramo: "Gramo",
+  Metro: "Metro",
+  Rollo: "Rollo",
+};
+
+export const TIPO_MOVIMIENTO_LABELS: Record<TipoMovimiento, string> = {
+  Entrada: "Entrada",
+  Salida: "Salida",
+  Ajuste: "Ajuste",
+};
+
+export const TIPO_MOVIMIENTO_COLORS: Record<
+  TipoMovimiento,
+  { bg: string; text: string }
+> = {
+  Entrada: {
+    bg: "bg-green-100 dark:bg-green-900/30",
+    text: "text-green-800 dark:text-green-200",
+  },
+  Salida: {
+    bg: "bg-red-100 dark:bg-red-900/30",
+    text: "text-red-800 dark:text-red-200",
+  },
+  Ajuste: {
+    bg: "bg-blue-100 dark:bg-blue-900/30",
+    text: "text-blue-800 dark:text-blue-200",
+  },
+};
+
+export const MOTIVOS_ENTRADA = [
+  "Compra",
+  "Donación",
+  "Transferencia",
+  "Otro",
+] as const;
+
+export const MOTIVOS_SALIDA = [
+  "Uso en consultorio",
+  "Vencimiento",
+  "Rotura/Daño",
+  "Transferencia",
+  "Otro",
+] as const;
+
+export const MOTIVOS_AJUSTE = [
+  "Ajuste de inventario",
+  "Corrección de error",
+  "Otro",
 ] as const;

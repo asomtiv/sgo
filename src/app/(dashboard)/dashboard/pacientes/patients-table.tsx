@@ -77,6 +77,8 @@ export function PatientsTable({
   const [confirmPatient, setConfirmPatient] =
     useState<PatientWithProvincia | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [fichaSearchOpen, setFichaSearchOpen] = useState(false);
+  const [fichaSearchValue, setFichaSearchValue] = useState("");
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -95,6 +97,11 @@ export function PatientsTable({
     setDeleting(true);
     const result = await deletePatient(confirmPatient.id);
     setDeleting(false);
+    if (result?.error) {
+      toast.error(result.error);
+      setConfirmOpen(false);
+      return;
+    }
     setConfirmOpen(false);
     if (result.success) {
       toast.success("Paciente eliminado exitosamente");
@@ -103,33 +110,40 @@ export function PatientsTable({
 
   return (
     <>
-      <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por DNI o nombre..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button type="submit" variant="outline">
-          Buscar
+      <div className="flex items-center justify-between mb-4">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por DNI o nombre..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button type="submit" variant="outline">
+            Buscar
+          </Button>
+        </form>
+        <Button variant="outline" size="icon" onClick={() => { setFichaSearchValue(""); setFichaSearchOpen(true); }}>
+          <ClipboardList className="size-4" />
         </Button>
-      </form>
+      </div>
 
+      <div className="rounded-md border bg-card">
       <Table className="table-fixed">
         <colgroup>
           <col className="w-[7%]" />
-          <col className="w-[10%]" />
-          <col className="w-[10%]" />
-          <col className="w-[5%]" />
           <col className="w-[9%]" />
-          <col className="w-[10%]" />
-          <col className="w-[10%]" />
-          <col className="w-[10%]" />
-          <col className="w-[10%]" />
-          <col className="w-[12%]" />
+          <col className="w-[9%]" />
+          <col className="w-[4%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[8%]" />
+          <col className="w-[9%]" />
+          <col className="w-[9%]" />
+          <col className="w-[9%]" />
           <col className="w-[5%]" />
         </colgroup>
         <TableHeader>
@@ -143,6 +157,7 @@ export function PatientsTable({
             <TableHead>Nacionalidad</TableHead>
             <TableHead>Provincia</TableHead>
             <TableHead>Obra Social</TableHead>
+            <TableHead>Nro. Afiliado</TableHead>
             <TableHead>Dirección</TableHead>
             <TableHead className="w-10" />
           </TableRow>
@@ -150,7 +165,7 @@ export function PatientsTable({
         <TableBody>
           {patients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                 No se encontraron pacientes.
               </TableCell>
             </TableRow>
@@ -170,6 +185,7 @@ export function PatientsTable({
                 <TableCell className="truncate">{patient.nacionalidad?.name ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.provincia?.name ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.obraSocial?.name ?? "—"}</TableCell>
+                <TableCell className="truncate">{patient.nroAfiliado ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.address ?? "—"}</TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -212,6 +228,7 @@ export function PatientsTable({
           )}
         </TableBody>
       </Table>
+      </div>
 
       {/* Confirm delete dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -254,6 +271,62 @@ export function PatientsTable({
         open={editOpen}
         onOpenChange={setEditOpen}
       />
+
+      {/* Buscar ficha médica */}
+      <Dialog open={fichaSearchOpen} onOpenChange={setFichaSearchOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Buscar Ficha Médica</DialogTitle>
+            <DialogDescription>
+              Buscá al paciente por DNI o nombre para acceder a su ficha.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              autoFocus
+              placeholder="DNI o nombre..."
+              value={fichaSearchValue}
+              onChange={(e) => setFichaSearchValue(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto space-y-1">
+            {(() => {
+              const q = fichaSearchValue.trim().toLowerCase();
+              if (!q) return null;
+              const filtered = patients.filter(
+                (p) =>
+                  p.dni.includes(q) ||
+                  p.firstName.toLowerCase().includes(q) ||
+                  p.lastName.toLowerCase().includes(q)
+              );
+              if (filtered.length === 0)
+                return (
+                  <p className="text-center text-sm text-muted-foreground py-4">
+                    No se encontraron pacientes.
+                  </p>
+                );
+              return filtered.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/dashboard/pacientes/${p.id}`}
+                  onClick={() => setFichaSearchOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
+                >
+                  <ClipboardList className="size-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {p.lastName}, {p.firstName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">DNI {p.dni}</p>
+                  </div>
+                </Link>
+              ));
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

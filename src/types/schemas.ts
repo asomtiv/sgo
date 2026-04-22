@@ -55,6 +55,7 @@ export const createPatientSchema = z.object({
   address: z.string().optional(),
   provinciaId: z.string().optional(),
   obraSocialId: z.string().optional(),
+  nroAfiliado: z.string().optional(),
   nacionalidadId: z.string().optional(),
   estadoCivil: estadoCivilEnum.optional(),
 });
@@ -70,6 +71,7 @@ export const updatePatientSchema = z.object({
   address: z.string().optional(),
   provinciaId: z.string().optional(),
   obraSocialId: z.string().optional(),
+  nroAfiliado: z.string().optional(),
   nacionalidadId: z.string().optional(),
   estadoCivil: estadoCivilEnum.optional(),
 });
@@ -353,3 +355,58 @@ export type CreatePatientInput = z.infer<typeof createPatientSchema>;
 export type UpdatePatientInput = z.infer<typeof updatePatientSchema>;
 export type CreateProfessionalInput = z.infer<typeof createProfessionalSchema>;
 export type UpdateProfessionalInput = z.infer<typeof updateProfessionalSchema>;
+
+// --- Insumos ---
+
+const categoriaProductoEnum = z.enum([
+  "MaterialDental",
+  "Instrumental",
+  "Descartable",
+  "Medicamento",
+  "Otro",
+]);
+
+const unidadMedidaEnum = z.enum([
+  "Unidad",
+  "Caja",
+  "Paquete",
+  "Litro",
+  "Mililitro",
+  "Kilogramo",
+  "Gramo",
+  "Metro",
+  "Rollo",
+]);
+
+const tipoMovimientoEnum = z.enum(["Entrada", "Salida", "Ajuste"]);
+
+export const createProductoSchema = z.object({
+  name: z.string().min(1, "Nombre requerido").max(200, "Nombre muy largo"),
+  description: z.string().max(500).optional(),
+  category: categoriaProductoEnum,
+  unit: unidadMedidaEnum,
+  minStock: z.coerce.number().int().min(0, "El stock mínimo no puede ser negativo"),
+});
+
+export const updateProductoSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1, "Nombre requerido").max(200, "Nombre muy largo"),
+  description: z.string().max(500).optional(),
+  category: categoriaProductoEnum,
+  unit: unidadMedidaEnum,
+  minStock: z.coerce.number().int().min(0, "El stock mínimo no puede ser negativo"),
+});
+
+export const createStockMovementSchema = z.object({
+  productoId: z.string().min(1, "Producto requerido"),
+  type: tipoMovimientoEnum,
+  quantity: z.coerce.number().int().min(1, "La cantidad debe ser al menos 1"),
+  reason: z.string().min(1, "Motivo requerido"),
+  lote: z.string().optional(),
+  expirationDate: z.string().optional(),
+  notes: z.string().max(500).optional(),
+});
+
+export type CreateProductoInput = z.infer<typeof createProductoSchema>;
+export type UpdateProductoInput = z.infer<typeof updateProductoSchema>;
+export type CreateStockMovementInput = z.infer<typeof createStockMovementSchema>;

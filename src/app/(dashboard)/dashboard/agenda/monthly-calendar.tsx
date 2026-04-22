@@ -68,7 +68,7 @@ export function MonthlyCalendar({
   }, [month, counts]);
 
   return (
-    <div className="border border-border bg-background overflow-hidden">
+    <div className="border border-border bg-card overflow-hidden">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <Button variant="outline" size="icon-sm" onClick={onPrevMonth}>
