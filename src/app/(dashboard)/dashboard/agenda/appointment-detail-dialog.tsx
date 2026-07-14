@@ -18,6 +18,7 @@ import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_STATUS_COLORS,
 } from "@/lib/constants";
+import { TriangleAlert } from "lucide-react";
 import { formatDisplayName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AppointmentWithDetails } from "@/types";
@@ -150,11 +151,17 @@ export function AppointmentDetailDialog({
             <Field
               label="Estado"
               value={
-                <Badge
-                  className={cn(colors.bg, colors.text, colors.border, "border mt-0.5")}
-                >
-                  {APPOINTMENT_STATUS_LABELS[appointment.status]}
-                </Badge>
+                <span className="flex items-center gap-2 flex-wrap mt-0.5">
+                  <Badge className={cn(colors.bg, colors.text, colors.border, "border")}>
+                    {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                  </Badge>
+                  {appointment.isOverbooking && (
+                    <Badge className="bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:border-amber-700 flex items-center gap-1">
+                      <TriangleAlert className="size-3" />
+                      Sobreturno
+                    </Badge>
+                  )}
+                </span>
               }
             />
           </div>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createAppointment } from "@/services/appointment";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { TriangleAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ export type CreateSlot = {
   startDateTime: string;
   endDateTime: string;
   professionalName: string;
+  isOverbooking?: boolean;
 };
 
 function formatSlotDisplay(isoString: string): string {
@@ -74,7 +76,10 @@ export function CreateAppointmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuevo Turno</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {slot.isOverbooking && <TriangleAlert className="size-4 text-amber-500 shrink-0" />}
+            {slot.isOverbooking ? "Nuevo Sobreturno" : "Nuevo Turno"}
+          </DialogTitle>
           <DialogDescription>
             {slot.professionalName} — {startDisplay} a {endDisplay}
           </DialogDescription>
@@ -83,6 +88,9 @@ export function CreateAppointmentDialog({
           <input type="hidden" name="professionalId" value={slot.professionalId} />
           <input type="hidden" name="startDateTime" value={slot.startDateTime} />
           <input type="hidden" name="endDateTime" value={slot.endDateTime} />
+          {slot.isOverbooking && (
+            <input type="hidden" name="isOverbooking" value="true" />
+          )}
           <input
             type="hidden"
             name="patientId"

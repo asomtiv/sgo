@@ -79,6 +79,8 @@ export function PatientsTable({
   const [deleting, setDeleting] = useState(false);
   const [fichaSearchOpen, setFichaSearchOpen] = useState(false);
   const [fichaSearchValue, setFichaSearchValue] = useState("");
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailPatient, setDetailPatient] = useState<PatientWithProvincia | null>(null);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -171,7 +173,11 @@ export function PatientsTable({
             </TableRow>
           ) : (
             patients.map((patient) => (
-              <TableRow key={patient.id}>
+              <TableRow
+                key={patient.id}
+                className="cursor-pointer"
+                onClick={() => { setDetailPatient(patient); setDetailOpen(true); }}
+              >
                 <TableCell>{patient.dni}</TableCell>
                 <TableCell className="font-medium">{patient.firstName}</TableCell>
                 <TableCell className="font-medium">{patient.lastName}</TableCell>
@@ -187,7 +193,7 @@ export function PatientsTable({
                 <TableCell className="truncate">{patient.obraSocial?.name ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.nroAfiliado ?? "—"}</TableCell>
                 <TableCell className="truncate">{patient.address ?? "—"}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       render={<Button variant="ghost" size="icon-sm" />}
@@ -271,6 +277,89 @@ export function PatientsTable({
         open={editOpen}
         onOpenChange={setEditOpen}
       />
+
+      {/* Detalle del paciente */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="sm:max-w-lg">
+          {detailPatient && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {detailPatient.lastName}, {detailPatient.firstName}
+                </DialogTitle>
+                <DialogDescription>DNI {detailPatient.dni}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Datos personales</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Fecha de nacimiento</p>
+                      <p className="font-medium">
+                        {detailPatient.birthDate
+                          ? new Date(detailPatient.birthDate).toLocaleDateString("es-AR")
+                          : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Edad</p>
+                      <p className="font-medium">
+                        {detailPatient.birthDate ? calcularEdad(new Date(detailPatient.birthDate)) + " años" : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Estado civil</p>
+                      <p className="font-medium">
+                        {detailPatient.estadoCivil ? ESTADO_CIVIL_LABELS[detailPatient.estadoCivil] ?? "—" : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Nacionalidad</p>
+                      <p className="font-medium">{detailPatient.nacionalidad?.name ?? "—"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Contacto</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Teléfono</p>
+                      <p className="font-medium">{detailPatient.phone ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="font-medium">{detailPatient.email ?? "—"}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Dirección</p>
+                      <p className="font-medium">{detailPatient.address ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Provincia</p>
+                      <p className="font-medium">{detailPatient.provincia?.name ?? "—"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Cobertura</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Obra Social</p>
+                      <p className="font-medium">{detailPatient.obraSocial?.name ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Nro. de Afiliado</p>
+                      <p className="font-medium">{detailPatient.nroAfiliado ?? "—"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Buscar ficha médica */}
       <Dialog open={fichaSearchOpen} onOpenChange={setFichaSearchOpen}>

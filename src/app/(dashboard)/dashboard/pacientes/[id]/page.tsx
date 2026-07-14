@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getPatientFicha } from "@/services/historia-clinica";
 import { getCurrentUser } from "@/services/user";
+import { getAppointmentsForEvolucion } from "@/services/appointment";
+import { getEvolucionesByPatient } from "@/services/evolucion";
 import { PatientFicha } from "./patient-ficha";
 
 export default async function PatientFichaPage({
@@ -9,13 +11,16 @@ export default async function PatientFichaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [data, currentUser] = await Promise.all([
+  const [data, currentUser, evoluciones, availableAppointments] = await Promise.all([
     getPatientFicha(id),
     getCurrentUser(),
+    getEvolucionesByPatient(id),
+    getAppointmentsForEvolucion(id),
   ]);
   if (!data) notFound();
 
   const canEditHistoria = currentUser?.role !== "Recepcion";
+  const isAdmin = currentUser?.role === "Admin";
 
   return (
     <div className="space-y-6">
@@ -25,7 +30,13 @@ export default async function PatientFichaPage({
           {data.firstName} {data.lastName} — DNI {data.dni}
         </p>
       </div>
-      <PatientFicha data={data} canEditHistoria={canEditHistoria} />
+      <PatientFicha
+        data={data}
+        canEditHistoria={canEditHistoria}
+        isAdmin={isAdmin}
+        evoluciones={evoluciones}
+        availableAppointments={availableAppointments}
+      />
     </div>
   );
 }

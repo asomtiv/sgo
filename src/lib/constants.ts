@@ -45,9 +45,9 @@ export const APPOINTMENT_STATUS_COLORS: Record<
   { bg: string; text: string; border: string }
 > = {
   Pendiente: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    text: "text-amber-800 dark:text-amber-200",
-    border: "border-amber-300 dark:border-amber-700",
+    bg: "bg-violet-100 dark:bg-violet-900/30",
+    text: "text-violet-800 dark:text-violet-200",
+    border: "border-violet-300 dark:border-violet-700",
   },
   Confirmado: {
     bg: "bg-blue-100 dark:bg-blue-900/30",

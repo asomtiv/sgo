@@ -132,6 +132,13 @@ export function AgendaView({
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithDetails | null>(null);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
 
+  // Sync fresh server-side counts into the cache whenever the page re-renders
+  // with new props (e.g. after navigating to a different day).
+  useEffect(() => {
+    setCountsCache((prev) => ({ ...prev, [monthlyData.month]: monthlyData.counts }));
+    setDisplayMonth(monthlyData.month);
+  }, [monthlyData]);
+
   useEffect(() => {
     if (countsCache[displayMonth] !== undefined) return;
     if (fetchingRef.current.has(displayMonth)) return;
@@ -196,7 +203,11 @@ export function AgendaView({
             professionals={data.professionals}
             appointments={data.appointments}
             date={data.date}
-            onSlotClick={(slot) => { setCreateSlot(slot); setCreateOpen(true); }}
+            currentUserRole={currentUserRole}
+            onSlotClick={(slot) => {
+              setCreateSlot(slot);
+              setCreateOpen(true);
+            }}
             onAppointmentClick={(apt) => { setSelectedAppointment(apt); setDetailOpen(true); }}
           />
         </div>

@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Download, Stethoscope, ClipboardList, Pencil } from "lucide-react";
+import { AlertTriangle, Download, Stethoscope, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HistoriaForm } from "./historia-form";
 import { HistoriaDisplay } from "./historia-display";
 import { OdontogramSection } from "@/components/odontogram";
-import type { PatientFichaData } from "@/types";
+import { EvolucionesList } from "./evoluciones-list";
+import { EvolucionForm } from "./evolucion-form";
+import type { AppointmentForEvolucion, EvolucionWithDetails, PatientFichaData } from "@/types";
 
 function calcularEdad(birthDate: Date): number {
   const today = new Date();
@@ -36,10 +37,24 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export function PatientFicha({ data, canEditHistoria = true }: { data: PatientFichaData; canEditHistoria?: boolean }) {
+export function PatientFicha({
+  data,
+  canEditHistoria = true,
+  isAdmin = false,
+  evoluciones = [],
+  availableAppointments = [],
+}: {
+  data: PatientFichaData;
+  canEditHistoria?: boolean;
+  isAdmin?: boolean;
+  evoluciones?: EvolucionWithDetails[];
+  availableAppointments?: AppointmentForEvolucion[];
+}) {
   const [activeTab, setActiveTab] = useState<TabKey>("historia");
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [evolucionMode, setEvolucionMode] = useState<"list" | "create" | "edit">("list");
+  const [editingEvolucion, setEditingEvolucion] = useState<EvolucionWithDetails | null>(null);
 
   const historia = data.historiaClinica;
   const hasCriticalAlerts =
@@ -49,6 +64,8 @@ export function PatientFicha({ data, canEditHistoria = true }: { data: PatientFi
     setActiveTab(tab);
     setIsCreating(false);
     setIsEditing(false);
+    setEvolucionMode("list");
+    setEditingEvolucion(null);
   }
 
   return (
@@ -263,13 +280,39 @@ export function PatientFicha({ data, canEditHistoria = true }: { data: PatientFi
 
       {/* Evoluciones tab */}
       {activeTab === "evoluciones" && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground gap-3">
-            <ClipboardList className="size-10 opacity-30" />
-            <p className="font-medium">Evoluciones</p>
-            <p className="text-sm">Próximamente disponible</p>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          {(evolucionMode === "list") && (
+            <div className="flex justify-end">
+              {canEditHistoria && (
+                <Button size="sm" onClick={() => setEvolucionMode("create")} className="gap-1.5">
+                  <Plus className="size-3.5" />
+                  Nueva Evolución
+                </Button>
+              )}
+            </div>
+          )}
+
+          {evolucionMode === "list" && (
+            <EvolucionesList
+              patientId={data.id}
+              evoluciones={evoluciones}
+              canEdit={canEditHistoria}
+              canDelete={isAdmin}
+              onNew={() => setEvolucionMode("create")}
+              onEdit={(ev) => { setEditingEvolucion(ev); setEvolucionMode("edit"); }}
+            />
+          )}
+
+          {(evolucionMode === "create" || evolucionMode === "edit") && (
+            <EvolucionForm
+              patientId={data.id}
+              availableAppointments={availableAppointments}
+              evolucion={evolucionMode === "edit" ? editingEvolucion ?? undefined : undefined}
+              onCancel={() => { setEvolucionMode("list"); setEditingEvolucion(null); }}
+              onSuccess={() => { setEvolucionMode("list"); setEditingEvolucion(null); }}
+            />
+          )}
+        </div>
       )}
     </div>
   );

@@ -102,6 +102,7 @@ export type AppointmentWithDetails = {
   status: EstadoTurno;
   notes: string | null;
   cancellationReason: string | null;
+  isOverbooking: boolean;
   createdAt: Date;
   patient: { id: string; dni: string; firstName: string; lastName: string; phone: string | null };
   professional: {
@@ -142,6 +143,50 @@ export type PatientSearchResult = {
   dni: string;
   firstName: string;
   lastName: string;
+};
+
+// --- Evoluciones ---
+
+export type EvolucionItemData = {
+  id: string;
+  diente: string;
+  prestacion: string;
+};
+
+export type EvolucionWithDetails = {
+  id: string;
+  patientId: string;
+  appointmentId: string;
+  observations: string | null;
+  items: EvolucionItemData[];
+  appointment: {
+    startDateTime: Date;
+    endDateTime: Date;
+    status: EstadoTurno;
+  };
+  professional: {
+    user: {
+      profile: { firstName: string; lastName: string } | null;
+      role: Role;
+    };
+    speciality: { name: string };
+  };
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type AppointmentForEvolucion = {
+  id: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  status: EstadoTurno;
+  professional: {
+    user: {
+      profile: { firstName: string; lastName: string } | null;
+      role: Role;
+    };
+    speciality: { name: string };
+  };
 };
 
 // --- Ficha Médica ---

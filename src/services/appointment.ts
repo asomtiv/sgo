@@ -161,6 +161,29 @@ export async function searchPatients(
   });
 }
 
+export async function getAppointmentsForEvolucion(patientId: string) {
+  return prisma.appointment.findMany({
+    where: {
+      patientId,
+      status: { in: ["Completado", "Confirmado"] },
+      evolucion: null,
+    },
+    select: {
+      id: true,
+      startDateTime: true,
+      endDateTime: true,
+      status: true,
+      professional: {
+        select: {
+          user: { select: { profile: { select: { firstName: true, lastName: true } }, role: true } },
+          speciality: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { startDateTime: "desc" },
+  });
+}
+
 export async function getMonthlyAppointmentCounts(
   month: string,
   professionalId?: string
@@ -208,6 +231,7 @@ export async function createAppointment(
     startDateTime: formData.get("startDateTime"),
     endDateTime: formData.get("endDateTime"),
     notes: formData.get("notes") || undefined,
+    isOverbooking: formData.get("isOverbooking") === "true",
   });
 
   if (!parsed.success) {
@@ -215,13 +239,17 @@ export async function createAppointment(
     return { error: firstError };
   }
 
-  const { patientId, professionalId, startDateTime, endDateTime, notes } =
+  const { patientId, professionalId, startDateTime, endDateTime, notes, isOverbooking } =
     parsed.data;
 
   const startDT = new Date(startDateTime);
   const endDT = new Date(endDateTime);
 
-  // 1. Availability check (reuses existing engine)
+  const currentUser = await getCurrentUser();
+  const canOverbooking =
+    currentUser?.role === "Admin" || currentUser?.role === "Recepcion";
+
+  // 1. Availability check — never bypassed (no bookings outside hours or during leave)
   const availCheck = await checkProfessionalAvailability(
     professionalId,
     startDT,
@@ -231,7 +259,7 @@ export async function createAppointment(
     return { error: availCheck.reason! };
   }
 
-  // 2. Professional collision
+  // 2. Professional collision — bypassed for Admin/Recepcion when isOverbooking=true
   const profCollision = await prisma.appointment.findFirst({
     where: {
       professionalId,
@@ -241,10 +269,12 @@ export async function createAppointment(
     },
   });
   if (profCollision) {
-    return { error: "El profesional ya tiene un turno en ese horario" };
+    if (!canOverbooking || !isOverbooking) {
+      return { error: "El profesional ya tiene un turno en ese horario" };
+    }
   }
 
-  // 3. Patient collision
+  // 3. Patient collision — never bypassed
   const patCollision = await prisma.appointment.findFirst({
     where: {
       patientId,
@@ -257,8 +287,6 @@ export async function createAppointment(
     return { error: "El paciente ya tiene un turno en ese horario" };
   }
 
-  const currentUser = await getCurrentUser();
-
   await prisma.appointment.create({
     data: {
       patientId,
@@ -266,6 +294,7 @@ export async function createAppointment(
       startDateTime: startDT,
       endDateTime: endDT,
       notes: notes || null,
+      isOverbooking: isOverbooking && canOverbooking ? true : false,
       createdById: currentUser?.id ?? null,
     },
   });
@@ -319,6 +348,7 @@ export async function rescheduleAppointment(
     professionalId: formData.get("professionalId"),
     startDateTime: formData.get("startDateTime"),
     endDateTime: formData.get("endDateTime"),
+    isOverbooking: formData.get("isOverbooking") === "true",
   });
 
   if (!parsed.success) {
@@ -326,7 +356,7 @@ export async function rescheduleAppointment(
     return { error: firstError };
   }
 
-  const { id, professionalId, startDateTime, endDateTime } = parsed.data;
+  const { id, professionalId, startDateTime, endDateTime, isOverbooking } = parsed.data;
   const startDT = new Date(startDateTime);
   const endDT = new Date(endDateTime);
 
@@ -343,7 +373,11 @@ export async function rescheduleAppointment(
     return { error: "El profesional seleccionado no está activo" };
   }
 
-  // 1. Availability check
+  const currentUser = await getCurrentUser();
+  const canOverbooking =
+    currentUser?.role === "Admin" || currentUser?.role === "Recepcion";
+
+  // 1. Availability check — never bypassed
   const availCheck = await checkProfessionalAvailability(
     professionalId,
     startDT,
@@ -353,7 +387,7 @@ export async function rescheduleAppointment(
     return { error: availCheck.reason! };
   }
 
-  // 2. Professional collision (excluding this appointment if same professional)
+  // 2. Professional collision — bypassed for Admin/Recepcion when isOverbooking=true
   const profCollision = await prisma.appointment.findFirst({
     where: {
       professionalId,
@@ -364,10 +398,12 @@ export async function rescheduleAppointment(
     },
   });
   if (profCollision) {
-    return { error: "El profesional ya tiene un turno en ese horario" };
+    if (!canOverbooking || !isOverbooking) {
+      return { error: "El profesional ya tiene un turno en ese horario" };
+    }
   }
 
-  // 3. Patient collision (excluding this appointment)
+  // 3. Patient collision — never bypassed
   const patCollision = await prisma.appointment.findFirst({
     where: {
       patientId: existing.patientId,
@@ -381,6 +417,9 @@ export async function rescheduleAppointment(
     return { error: "El paciente ya tiene un turno en ese horario" };
   }
 
+  // Normalize isOverbooking: false if slot is now free, preserve if still colliding
+  const newIsOverbooking = profCollision ? (isOverbooking && canOverbooking) : false;
+
   await prisma.appointment.update({
     where: { id },
     data: {
@@ -388,6 +427,7 @@ export async function rescheduleAppointment(
       startDateTime: startDT,
       endDateTime: endDT,
       status: "Pendiente",
+      isOverbooking: newIsOverbooking,
     },
   });
 

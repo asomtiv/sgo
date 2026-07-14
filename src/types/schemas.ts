@@ -162,6 +162,7 @@ export const createAppointmentSchema = z.object({
   startDateTime: z.string().min(1, "Fecha y hora de inicio requerida"),
   endDateTime: z.string().min(1, "Fecha y hora de fin requerida"),
   notes: z.string().optional(),
+  isOverbooking: z.boolean().optional(),
 });
 
 export const updateAppointmentStatusSchema = z.object({
@@ -178,6 +179,28 @@ export const rescheduleAppointmentSchema = z.object({
   professionalId: z.string().min(1, "Profesional requerido"),
   startDateTime: z.string().min(1, "Fecha y hora requerida"),
   endDateTime: z.string().min(1, "Fecha y hora requerida"),
+  isOverbooking: z.boolean().optional(),
+});
+
+// --- Evoluciones ---
+
+const evolucionItemSchema = z.object({
+  diente: z.string().min(1, "Ingresá el número de diente"),
+  prestacion: z.string().min(1, "Ingresá la prestación"),
+});
+
+export const createEvolucionSchema = z.object({
+  patientId: z.string().min(1),
+  appointmentId: z.string().min(1),
+  observations: z.string().optional(),
+  items: z.array(evolucionItemSchema).min(1, "Agregá al menos una prestación"),
+});
+
+export const updateEvolucionSchema = z.object({
+  id: z.string().min(1),
+  patientId: z.string().min(1),
+  observations: z.string().optional(),
+  items: z.array(evolucionItemSchema).min(1, "Agregá al menos una prestación"),
 });
 
 // --- Historia Clínica ---
